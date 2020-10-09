@@ -1,0 +1,15 @@
+stackswitcher > button {
+    border-radius: 0;
+}
+
+stackswitcher > button:first-child {
+    border-left: none;
+}
+
+stackswitcher > button:last-child {
+    border-right: none;
+}
+
+scrolledwindow {
+	border: none;
+}
