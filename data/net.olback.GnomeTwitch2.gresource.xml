@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/net/olback/GnomeTwitch2">
+        <!-- CSS -->
+        <file alias="css/custom.css">data/css/custom.css</file>
+        <!-- UI -->
+        <file alias="ui/main">data/ui/main.glade</file>
+        <file alias="ui/about">data/ui/about.glade</file>
+        <!-- Images -->
+        <file alias="images/player-placeholder">data/images/player-placeholder.jpg</file>
+    </gresource>
+</gresources>

@@ -1,0 +1,37 @@
+stackswitcher > button {
+    border-radius: 0;
+}
+
+stackswitcher > button:first-child {
+    border-left: none;
+}
+
+stackswitcher > button:last-child {
+    border-right: none;
+}
+
+scrolledwindow {
+    border: none;
+}
+
+.media-controls-overlay {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.media-controls-overlay button, .media-controls-overlay label {
+    color: #fff;
+}
+
+.media-controls-overlay button:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.media-controls-overlay button:active {
+    border-color: rgba(0, 0, 0, 0.8);
+}
+
+.black-background {
+    background-color: #000;
+}
+
+
