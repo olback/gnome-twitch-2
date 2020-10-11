@@ -6,6 +6,7 @@ use {
 mod about;
 mod login;
 mod settings;
+mod twitch;
 
 pub struct Ui;
 
@@ -28,10 +29,11 @@ impl Ui {
         player_menu.append_submenu(Some("Quality"), &quality_options);
         get_obj!(gtk::MenuButton, builder, "player-menu-button").set_menu_model(Some(&player_menu));
 
-        let window: ApplicationWindow = get_obj!(builder, "main-window");
-        about::configure(&window);
-        window.set_application(Some(app));
-        window.show_all();
+        let main_window: ApplicationWindow = get_obj!(builder, "main-window");
+        about::configure(&main_window);
+        twitch::configure(&main_window);
+        main_window.set_application(Some(app));
+        main_window.show_all();
     }
 
     fn builder() -> gtk::Builder {

@@ -211,6 +211,8 @@ Author: Edwin Svensson
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
+            <property name="transition-duration">100</property>
+            <property name="transition-type">crossfade</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -518,6 +520,9 @@ Author: Edwin Svensson
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="resource">/net/olback/GnomeTwitch2/images/player-placeholder</property>
+                        <style>
+                          <class name="black-background"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="index">-1</property>
@@ -699,9 +704,6 @@ audio-volume-medium-symbolic</property>
                         </style>
                       </object>
                     </child>
-                    <style>
-                      <class name="black-background"/>
-                    </style>
                   </object>
                   <packing>
                     <property name="resize">True</property>
@@ -818,6 +820,9 @@ audio-volume-medium-symbolic</property>
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="hexpand">True</property>
+                            <property name="placeholder-text" translatable="yes">Send a message</property>
+                            <property name="show-emoji-icon">True</property>
+                            <property name="enable-emoji-completion">True</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>

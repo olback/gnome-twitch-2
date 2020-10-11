@@ -10,7 +10,7 @@ pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/versio
 pub const AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
 pub const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOME_PAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
-pub const LICENSE: &'static str = include_str!("LICENSE");
+pub const LICENSE: &'static str = include_str!("../LICENSE");
 
 pub fn register_resources() {
 
