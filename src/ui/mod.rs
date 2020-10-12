@@ -7,6 +7,7 @@ mod about;
 mod login;
 mod settings;
 mod twitch;
+mod player;
 
 pub struct Ui;
 
@@ -31,7 +32,8 @@ impl Ui {
 
         let main_window: ApplicationWindow = get_obj!(builder, "main-window");
         about::configure(&main_window);
-        twitch::configure(&main_window);
+        // twitch::configure(&main_window);
+        player::configure(&builder);
         main_window.set_application(Some(app));
         main_window.show_all();
     }

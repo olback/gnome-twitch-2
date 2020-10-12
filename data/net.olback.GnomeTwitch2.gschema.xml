@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="perif">
+    <schema path="/net/olback/perif/" id="net.olback.perif">
+
+        <key type="s" name="default-view">
+            <default>'following'</default>
+            <choices>
+                <choice value='channels'/>
+                <choice value='following'/>
+                <choice value='games'/>
+            </choices>
+            <summary>Default view</summary>
+            <description>
+                Default view, can be either 'channels', 'follwing' or 'games'.
+            </description>
+        </key>
+
+    </schema>
+</schemalist>

@@ -15,7 +15,9 @@ gio = "0.9"
 gdk = "0.13"
 glib = "0.10"
 webkit2gtk = "0.10" # Only used to authenticate, may be replaced by a user redirect.
+gst = { package = "gstreamer", version = "0.16" }
 # I/O
 #reqwest = "0.10"
 #tokio = { version = "0.2", features = [ "full" ] }
 #tokio-tungstenite = "0.11"
+# keyring = "0.9"

@@ -23,6 +23,17 @@ macro_rules! get_obj {
 }
 
 #[macro_export]
+macro_rules! is_debug {
+    () => {
+        if cfg!(debug_assertions) {
+            std::env::var("GT2_DEBUG").map(|v| v.to_lowercase()) != Ok("false".into())
+        } else {
+            std::env::var("GT2_DEBUG").map(|v| v.to_lowercase()) == Ok("true".into())
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! resource {
     ($res:expr) => {
         concat!("/net/olback/GnomeTwitch2/", $res)

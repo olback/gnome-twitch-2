@@ -1,13 +1,15 @@
 use {
     gtk::{Application, prelude::*},
     gio::prelude::*,
-    ui::Ui
+    ui::Ui,
+    error::GtError
 };
 
 mod resources;
 mod ui;
 mod macros;
 mod log;
+mod error;
 
 fn main() {
 

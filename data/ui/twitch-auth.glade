@@ -3,7 +3,6 @@
 <interface>
   <requires lib="gtk+" version="3.24"/>
   <object class="GtkWindow" id="twitch-auth-window">
-    <property name="visible">True</property>
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
@@ -13,18 +12,46 @@
     <property name="destroy-with-parent">True</property>
     <property name="type-hint">dialog</property>
     <child>
-      <object class="GtkScrolledWindow">
+      <object class="GtkStack" id="stack1">
         <property name="visible">True</property>
-        <property name="can-focus">True</property>
-        <property name="shadow-type">in</property>
+        <property name="can-focus">False</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
         <child>
-          <object class="GtkViewport" id="wkvp">
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
             <child>
-              <placeholder/>
+              <object class="GtkViewport" id="wkvp">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
             </child>
           </object>
+          <packing>
+            <property name="name">webview</property>
+            <property name="title" translatable="yes">Webview</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinner">
+            <property name="width-request">50</property>
+            <property name="height-request">50</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="active">True</property>
+          </object>
+          <packing>
+            <property name="name">spinner</property>
+            <property name="title" translatable="yes">Spinner</property>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
     </child>
@@ -34,6 +61,13 @@
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">Twitch Authentication</property>
         <property name="show-close-button">True</property>
+        <child>
+          <object class="GtkStackSwitcher">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="stack">stack1</property>
+          </object>
+        </child>
       </object>
     </child>
   </object>
