@@ -32,6 +32,8 @@ macro_rules! impl_from {
 
 pub trait GtErrorTrait: fmt::Display + fmt::Debug {}
 
+pub type GtResult<T> = std::result::Result<T, GtError>;
+
 #[derive(Debug)]
 pub struct GtError {
     pub line: u32,
@@ -72,6 +74,9 @@ impl fmt::Display for GtError {
     }
 }
 
-impl_from!(std::io::Error);
+// impl_from!(std::io::Error);
 impl_from!(std::string::String);
-
+impl_from!(&str);
+impl_from!(glib::BoolError);
+impl_from!(glib::value::GetError);
+impl_from!(gst::StateChangeError);

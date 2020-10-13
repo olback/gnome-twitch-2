@@ -33,7 +33,7 @@ impl Ui {
         let main_window: ApplicationWindow = get_obj!(builder, "main-window");
         about::configure(&main_window);
         // twitch::configure(&main_window);
-        player::configure(&builder);
+        player::configure(app, &builder);
         main_window.set_application(Some(app));
         main_window.show_all();
     }

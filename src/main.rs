@@ -10,10 +10,15 @@ mod ui;
 mod macros;
 mod log;
 mod error;
+mod backends;
+mod helix;
 
 fn main() {
 
     debug!("Starting...");
+
+    // Init GST
+    gst::init().unwrap();
 
     resources::register_resources();
 

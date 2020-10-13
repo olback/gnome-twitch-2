@@ -540,18 +540,12 @@ Author: Edwin Svensson
                                 <property name="hexpand">True</property>
                                 <property name="vexpand">True</property>
                                 <child>
-                                  <object class="GtkBox">
+                                  <object class="GtkBox" id="player-container">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
                                     <property name="hexpand">True</property>
                                     <property name="vexpand">True</property>
                                     <property name="orientation">vertical</property>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
                                     <child>
                                       <placeholder/>
                                     </child>
