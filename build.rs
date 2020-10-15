@@ -1,8 +1,6 @@
 use {
-    std::{
-        process::Command,
-        path::PathBuf
-    }
+    std::{process::Command, path::PathBuf},
+    last_git_commit::LastGitCommit
 };
 
 fn path(file: &str) -> PathBuf {
@@ -17,7 +15,10 @@ fn rerun() {
 
 fn version() {
 
-    std::fs::write(path("version.txt"), env!("CARGO_PKG_VERSION"));
+    let lgc = LastGitCommit::new().set_path(".").build().unwrap();
+    let cargo_version = env!("CARGO_PKG_VERSION");
+
+    std::fs::write(path("version.txt"), format!("{}-{}", cargo_version, lgc.id().short()));
 
 }
 

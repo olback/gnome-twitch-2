@@ -4,10 +4,10 @@ use {
     rusqlite::{Connection, params}
 };
 
-const TABLE_NAME: &'static str = "assets";
-const TABLE_LAYOUT: &'static str = include_str!("../assets.sql");
+const TABLE_LAYOUT: &'static str = include_str!("../../assets.sql");
 
-pub struct Asset {
+#[derive(Debug)]
+pub struct CacheAsset {
     pub id: u32,
     pub created: u32,
     pub key: String,
@@ -35,13 +35,29 @@ impl AssetCache {
 
     }
 
-    pub fn load(&self, name: &str) -> GtResult<Option<Asset>> {
+    pub fn load(&self, name: &str) -> GtResult<Option<CacheAsset>> {
 
         if name.len() < 1 {
             return Err(new_err!("Name may not be less than one byte"))
         }
 
-        todo!()
+        let key = Self::key(name);
+
+        let mut stmt = p!(self.con.prepare("select * from assets where key = ?1"));
+        let mut results = p!(stmt.query_map(params![key], |row| {
+            Ok(CacheAsset {
+                id: row.get("id")?,
+                created: row.get("created")?,
+                key: row.get("key")?,
+                data: row.get("data")?
+            })
+        })).map(|a| a.unwrap()).collect::<Vec<_>>();
+
+        match results.len() {
+            0 => Ok(None),
+            1 => Ok(Some(results.remove(0))),
+            _ => unreachable!()
+        }
 
     }
 
@@ -83,9 +99,9 @@ impl AssetCache {
 
     }
 
-    pub fn path(&self) -> PathBuf {
+    pub fn path(&self) -> &PathBuf {
 
-        self.path.clone()
+        &self.path
 
     }
 

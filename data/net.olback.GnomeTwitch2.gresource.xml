@@ -7,6 +7,8 @@
         <file alias="ui/main">data/ui/main.glade</file>
         <file alias="ui/about">data/ui/about.glade</file>
         <file alias="ui/twitch-auth">data/ui/twitch-auth.glade</file>
+        <file alias="ui/settings">data/ui/settings.glade</file>
+        <file alias="ui/profile">data/ui/profile.glade</file>
         <!-- Images -->
         <file alias="images/player-placeholder">data/images/player-placeholder.jpg</file>
     </gresource>

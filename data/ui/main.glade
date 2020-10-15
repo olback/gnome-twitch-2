@@ -69,7 +69,8 @@ Author: Edwin Svensson
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="text" translatable="yes">Refresh login</property>
+            <property name="action-name">app.profile</property>
+            <property name="text" translatable="yes">Profile</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -82,6 +83,7 @@ Author: Edwin Svensson
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="action-name">app.settings</property>
             <property name="text" translatable="yes">Settings</property>
           </object>
           <packing>
@@ -95,6 +97,7 @@ Author: Edwin Svensson
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="action-name">app.about</property>
             <property name="text" translatable="yes">About</property>
           </object>
           <packing>
@@ -108,6 +111,7 @@ Author: Edwin Svensson
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="action-name">app.quit</property>
             <property name="text" translatable="yes">Quit</property>
           </object>
           <packing>
@@ -230,13 +234,17 @@ Author: Edwin Svensson
                       <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
                         <property name="shadow-type">in</property>
                         <child>
                           <object class="GtkViewport">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="hexpand">True</property>
+                            <property name="vexpand">True</property>
                             <child>
-                              <object class="GtkFlowBox">
+                              <object class="GtkFlowBox" id="channels-flowbox">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="hexpand">True</property>
@@ -247,6 +255,7 @@ Author: Edwin Svensson
                                 <property name="row-spacing">6</property>
                                 <property name="min-children-per-line">1</property>
                                 <property name="max-children-per-line">5</property>
+                                <property name="selection-mode">none</property>
                                 <child>
                                   <object class="GtkFlowBoxChild">
                                     <property name="visible">True</property>
@@ -261,10 +270,9 @@ Author: Edwin Svensson
                                         <property name="orientation">vertical</property>
                                         <property name="spacing">6</property>
                                         <child>
-                                          <object class="GtkImage">
+                                          <object class="GtkImage" id="test-image">
                                             <property name="visible">True</property>
                                             <property name="can-focus">False</property>
-                                            <property name="pixbuf">https:/olback.net/assets/img/edwin.jpg</property>
                                           </object>
                                           <packing>
                                             <property name="expand">False</property>
@@ -971,6 +979,22 @@ audio-volume-medium-symbolic</property>
                 <property name="name">player</property>
                 <property name="title" translatable="yes">Player</property>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinner">
+                <property name="width-request">100</property>
+                <property name="height-request">100</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="name">page0</property>
+                <property name="title" translatable="yes">page0</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>

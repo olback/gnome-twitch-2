@@ -3,7 +3,6 @@ macro_rules! p {
     ($e:expr) => {
         match $e {
             Ok(v) => v,
-
             Err(e) => return Err($crate::error::GtError {
                 line: line!(),
                 file: file!(),

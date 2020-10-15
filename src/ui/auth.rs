@@ -43,8 +43,9 @@ impl AuthWindow {
         inner.window.set_attached_to(Some(main_window));
         inner.stack.set_visible_child_name("spinner");
 
-        inner.window.connect_destroy(|win| {
+        inner.window.connect_delete_event(|win, _| {
             win.hide();
+            gtk::Inhibit(true)
         });
 
         let wkvp: Viewport = get_obj!(b, "wkvp");

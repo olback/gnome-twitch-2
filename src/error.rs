@@ -62,6 +62,7 @@ impl fmt::Display for GtError {
 impl_from!(std::string::String);
 impl_from!(std::io::Error);
 impl_from!(&str);
+impl_from!(glib::Error);
 impl_from!(glib::BoolError);
 impl_from!(glib::value::GetError);
 impl_from!(gst::StateChangeError);

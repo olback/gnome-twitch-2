@@ -1,5 +1,6 @@
 use {
-    crate::resource,
+    crate::{p, resource, error::GtResult},
+    gdk_pixbuf::PixbufLoaderExt,
     gtk::{self, CssProviderExt},
     gio,
     glib
@@ -10,8 +11,10 @@ pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/versio
 pub const AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
 pub const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOME_PAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
-pub const LICENSE: &'static str = include_str!("../LICENSE");
+pub const LICENSE: &'static str = include_str!("../../LICENSE");
 pub const KEYRING_NAME: &'static str = "Gnome Twitch 2";
+
+mod cache;
 
 pub fn register_resources() {
 
@@ -34,5 +37,19 @@ pub fn register_css() {
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
+
+}
+
+pub fn file_data_to_pixbuf(data: &[u8], size: Option<(i32, i32)>) -> GtResult<gdk_pixbuf::Pixbuf> {
+
+    let pixbufloader = gdk_pixbuf::PixbufLoader::new();
+    if let Some(size) = size {
+        pixbufloader.set_size(size.0, size.1);
+    }
+    p!(pixbufloader.write(&data));
+    let pixbuf = p!(pixbufloader.get_pixbuf().ok_or("Could not get pixbuf"));
+    drop(pixbufloader.close());
+
+    Ok(pixbuf)
 
 }

@@ -27,7 +27,7 @@ pub fn run<F>(f: F) -> JoinHandle<F::Output>
     RT.handle().spawn(f)
 }
 
-pub fn run_cb_local<F, C>(f: F, mut c: C) -> ()
+pub fn run_cb_local<F, C>(f: F, mut c: C)
     where F: Future + Send + 'static,
     F::Output: Send + 'static,
     C: FnMut(F::Output) + 'static
