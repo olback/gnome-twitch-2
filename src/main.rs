@@ -2,7 +2,7 @@ use {
     gtk::{Application, prelude::*},
     gio::prelude::*,
     ui::Ui,
-    error::GtError
+    twitch::Twitch
 };
 
 mod resources;
@@ -11,7 +11,9 @@ mod macros;
 mod log;
 mod error;
 mod backends;
-mod helix;
+mod twitch;
+mod rt;
+mod cache;
 
 fn main() {
 
@@ -27,7 +29,8 @@ fn main() {
 
     app.connect_activate(|app| {
         resources::register_css();
-        Ui::build(app);
+        let u = Ui::build(app);
+        u.auth_window.show();
     });
 
     app.run(&std::env::args().collect::<Vec<_>>());

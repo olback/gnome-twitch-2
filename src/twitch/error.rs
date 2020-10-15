@@ -2,33 +2,33 @@ use std::fmt;
 
 macro_rules! impl_from {
     ($type:ty) => {
-        impl GtErrorTrait for $type {}
-        // impl From<$type> for GtError {
-        //     fn from(e: $type) -> Self {
-        //         Self {
-        //             line: line!(),
-        //             file: file!(),
-        //             error: Some(Box::new(e))
-        //         }
-        //     }
-        // }
+        impl TwErrorTrait for $type {}
+        impl From<$type> for TwError {
+            fn from(e: $type) -> Self {
+                Self {
+                    line: line!(),
+                    file: file!(),
+                    error: Some(Box::new(e))
+                }
+            }
+        }
     };
 }
 
-pub trait GtErrorTrait: fmt::Display + fmt::Debug {}
 
-pub type GtResult<T> = std::result::Result<T, GtError>;
+pub type TwResult<T> = std::result::Result<T, TwError>;
+pub trait TwErrorTrait: fmt::Display + fmt::Debug + Send {}
 
 #[derive(Debug)]
-pub struct GtError {
+pub struct TwError {
     pub line: u32,
     pub file: &'static str,
-    pub error: Option<Box<dyn GtErrorTrait>>
+    pub error: Option<Box<dyn TwErrorTrait>>
 }
 
-impl GtError {
+impl TwError {
 
-    pub fn new(error: impl GtErrorTrait, line: u32, file: &'static str) -> Self {
+    pub fn new(error: impl TwErrorTrait, line: u32, file: &'static str) -> Self {
         Self {
             line,
             file,
@@ -49,7 +49,7 @@ impl GtError {
 
 }
 
-impl fmt::Display for GtError {
+impl fmt::Display for TwError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if crate::is_debug!() {
             write!(f, "{}", self.format(true))
@@ -60,9 +60,6 @@ impl fmt::Display for GtError {
 }
 
 impl_from!(std::string::String);
-impl_from!(std::io::Error);
-impl_from!(&str);
-impl_from!(glib::BoolError);
-impl_from!(glib::value::GetError);
-impl_from!(gst::StateChangeError);
-impl_from!(rusqlite::Error);
+impl_from!(reqwest::Error);
+impl_from!(reqwest::header::InvalidHeaderValue);
+impl_from!(url::ParseError);

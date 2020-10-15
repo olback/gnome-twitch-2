@@ -511,8 +511,8 @@ Author: Edwin Svensson
                 <property name="can-focus">True</property>
                 <child>
                   <object class="GtkScrolledWindow">
-                    <property name="width-request">800</property>
-                    <property name="height-request">450</property>
+                    <property name="width-request">960</property>
+                    <property name="height-request">540</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="hexpand">True</property>
@@ -604,6 +604,18 @@ Author: Edwin Svensson
 audio-volume-high-symbolic
 audio-volume-low-symbolic
 audio-volume-medium-symbolic</property>
+                                                <child internal-child="plus_button">
+                                                  <object class="GtkButton">
+                                                    <property name="can-focus">False</property>
+                                                    <property name="receives-default">False</property>
+                                                  </object>
+                                                </child>
+                                                <child internal-child="minus_button">
+                                                  <object class="GtkButton">
+                                                    <property name="can-focus">False</property>
+                                                    <property name="receives-default">False</property>
+                                                  </object>
+                                                </child>
                                               </object>
                                               <packing>
                                                 <property name="expand">False</property>
@@ -641,7 +653,7 @@ audio-volume-medium-symbolic</property>
                                               </packing>
                                             </child>
                                             <child>
-                                              <object class="GtkLabel">
+                                              <object class="GtkLabel" id="timestamp-label">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="label" translatable="yes">3:25:14</property>

@@ -1,4 +1,26 @@
 #[macro_export]
+macro_rules! p {
+    ($e:expr) => {
+        match $e {
+            Ok(v) => v,
+
+            Err(e) => return Err($crate::error::GtError {
+                line: line!(),
+                file: file!(),
+                error: Some(Box::new(e))
+            })
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! new_err {
+    ($cause:expr) => {
+        $crate::error::GtError::new($cause, line!(), file!())
+    };
+}
+
+#[macro_export]
 macro_rules! get_obj {
     ($builder:expr, $id:expr) => {
         // Catch and panic manually to get useful file and line info

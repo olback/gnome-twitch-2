@@ -1,18 +1,20 @@
 use {
     crate::{get_obj, resource},
+    std::rc::Rc,
     gtk::{Application, ApplicationWindow, prelude::*}
 };
 
 mod about;
-mod login;
 mod settings;
-mod twitch;
+mod auth;
 mod player;
 
-pub struct Ui;
+pub struct Ui {
+    pub auth_window: Rc<auth::AuthWindow>
+}
 
 impl Ui {
-    pub fn build(app: &Application) {
+    pub fn build(app: &Application) -> Ui {
         let builder = Self::builder();
 
         // TODO: Move this
@@ -31,11 +33,15 @@ impl Ui {
         get_obj!(gtk::MenuButton, builder, "player-menu-button").set_menu_model(Some(&player_menu));
 
         let main_window: ApplicationWindow = get_obj!(builder, "main-window");
-        about::configure(&main_window);
-        // twitch::configure(&main_window);
-        player::configure(app, &builder);
+        // about::configure(&main_window);
+        // player::configure(app, &builder);
+
         main_window.set_application(Some(app));
         main_window.show_all();
+
+        Self {
+            auth_window: auth::AuthWindow::configure(&main_window)
+        }
     }
 
     fn builder() -> gtk::Builder {

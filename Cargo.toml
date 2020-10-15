@@ -13,12 +13,20 @@ homepage = "https://github.com/olback/gnome-twitch-2"
 gtk = { version = "0.9", features = [ "v3_22_30" ] }
 gio = "0.9"
 gdk = "0.13"
+gdk-pixbuf = "0.9"
 glib = "0.10"
 webkit2gtk = "0.10" # Only used to authenticate, may be replaced by a user redirect.
 gst = { package = "gstreamer", version = "0.16" }
-# gstp = { package = "gstreamer-player", version = "0.16" }
+# Data
+serde = { version = "1.0", features = [ "derive" ] }
+url = "2"
+lazy_static = "1.4"
+# Asset Cache
+dirs = "3.0"
+hex = "0.4"
+rusqlite = { version = "0.24", features = [ "bundled" ] }
 # I/O
-#reqwest = "0.10"
-#tokio = { version = "0.2", features = [ "full" ] }
+tokio = { version = "0.2", features = [ "full" ] }
+reqwest = { version = "0.10", features = [ "json" ] }
 #tokio-tungstenite = "0.11"
-# keyring = "0.9"
+keyring = "0.9"

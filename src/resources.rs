@@ -11,6 +11,7 @@ pub const AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
 pub const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOME_PAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 pub const LICENSE: &'static str = include_str!("../LICENSE");
+pub const KEYRING_NAME: &'static str = "Gnome Twitch 2";
 
 pub fn register_resources() {
 

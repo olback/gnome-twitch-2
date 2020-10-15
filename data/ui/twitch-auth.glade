@@ -12,11 +12,13 @@
     <property name="destroy-with-parent">True</property>
     <property name="type-hint">dialog</property>
     <child>
-      <object class="GtkStack" id="stack1">
+      <object class="GtkStack" id="twitch-auth-stack">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
+        <property name="transition-duration">100</property>
+        <property name="transition-type">crossfade</property>
         <child>
           <object class="GtkScrolledWindow">
             <property name="visible">True</property>
@@ -53,6 +55,107 @@
             <property name="position">1</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">🥳</property>
+                <attributes>
+                  <attribute name="scale" value="7"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Yay! You are now logged in to Twitch.
+You may now close this window.</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">success</property>
+            <property name="title" translatable="yes">Success</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">🙄</property>
+                <attributes>
+                  <attribute name="scale" value="7"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Failed to log in to Twitch.
+Please try again.</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="twitch-auth-try-again">
+                <property name="label" translatable="yes">Try Again</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">failure</property>
+            <property name="title" translatable="yes">Failure</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
       </object>
     </child>
     <child type="titlebar">
@@ -61,13 +164,6 @@
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">Twitch Authentication</property>
         <property name="show-close-button">True</property>
-        <child>
-          <object class="GtkStackSwitcher">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="stack">stack1</property>
-          </object>
-        </child>
       </object>
     </child>
   </object>
