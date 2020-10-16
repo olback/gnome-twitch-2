@@ -1,7 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="perif">
-    <schema path="/net/olback/perif/" id="net.olback.perif">
-
+    <schema path="/net/olback/GnomeTwitch2/" id="net.olback.GnomeTwitch2">
+        <!-- Mostly stolen from https://github.com/vinszent/gnome-twitch/blob/master/data/com.vinszent.GnomeTwitch.gschema.xml -->
+        <key name="prefer-dark-theme" type="b">
+            <default>true</default>
+            <summary>Prefer dark theme</summary>
+            <description>Whether to use the dark variant of the theme</description>
+        </key>
+        <key name="default-quality" type="s">
+            <default>'source'</default>
+            <summary>Default quality</summary>
+            <description>Default quality selected when opening a stream</description>
+        </key>
+        <key name="volume" type="d">
+            <range min="0.0" max="1.0"/>
+            <default>0.3</default>
+            <summary>Current volume of the player</summary>
+        </key>
+        <key name="window-height" type="i">
+            <default>710</default>
+            <summary>Window height</summary>
+            <description>Current window height</description>
+        </key>
+        <key name="window-width" type="i">
+            <default>1050</default>
+            <summary>Window width</summary>
+            <description>Current window width</description>
+        </key>
+        <key name="user-name" type="s">
+            <default>''</default>
+            <summary>Twitch user name</summary>
+            <description>
+                User name that is used in conjunction with the OAuth token
+                to authenticate to the Twitch API. Is also used to login to IRC
+                and other Twitch services.
+            </description>
+        </key>
+        <key name="user-id" type="s">
+            <default>''</default>
+            <summary>Twitch user ID</summary>
+            <description>
+                User ID that is used in conjunction with the OAuth token
+                to authenticate to the Twitch API.
+            </description>
+        </key>
         <key type="s" name="default-view">
             <default>'following'</default>
             <choices>
@@ -14,6 +56,5 @@
                 Default view, can be either 'channels', 'follwing' or 'games'.
             </description>
         </key>
-
     </schema>
 </schemalist>

@@ -1,3 +1,5 @@
+@define-color twitch #6441a5;
+
 stackswitcher > button {
     border-radius: 0;
 }
@@ -19,11 +21,13 @@ scrolledwindow {
 }
 
 .media-controls-overlay button, .media-controls-overlay label {
+    outline: none;
     color: #fff;
 }
 
 .media-controls-overlay button:hover {
     background-color: rgba(0, 0, 0, 0.4);
+    border-color: @twitch;
 }
 
 .media-controls-overlay button:active {

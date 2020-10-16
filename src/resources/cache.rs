@@ -83,19 +83,21 @@ impl AssetCache {
 
     pub fn exists(&self, name: &str) -> GtResult<bool> {
 
-        todo!()
+        let key = Self::key(name);
+        let mut stmt = p!(self.con.prepare("select key from assets where key = ?1"));
+        let mut res = p!(stmt.query(params![key]));
+        let next = p!(res.next());
+
+        Ok(next.is_some())
 
     }
 
-    pub fn remove_old(&self, timestamp: u64) -> GtResult<()> {
-
-        todo!()
-
-    }
+    // pub fn remove_old(&self, timestamp: u32) -> GtResult<()> { }
 
     pub fn clear(&self) -> GtResult<()> {
 
-        todo!()
+        p!(self.con.execute("delete from assets", params![]));
+        Ok(())
 
     }
 
