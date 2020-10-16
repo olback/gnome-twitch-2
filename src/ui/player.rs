@@ -1,14 +1,17 @@
 use {
     crate::{resource, get_obj, message, warning, error, backends::{GtPlayerBackend, BackendGstreamerOpenGL}},
-    std::cell::RefCell,
-    gtk::{Application, Builder, Box as GtkBox, Label, prelude::*},
-    gst::prelude::*
+    std::{rc::Rc, cell::RefCell},
+    gtk::{Application, Builder, Box as GtkBox, Button, ToggleButton, IconSize,
+        MenuButton, VolumeButton, ApplicationWindow, Image, Label, prelude::*
+    },
+    glib::clone
+    // gst::prelude::*
 };
 
 // pub fn configure(app: &Application, builder: &Builder) {
 
 //     let container: GtkBox = get_obj!(builder, "player-container");
-//     let timestamp_label: Label = get_obj!(builder, "timestamp-label");
+//     let timestamp_label: Label = get_obj!(builder, "player-timestamp-label");
 
 //     let pipeline = gst::Pipeline::new(None);
 //     let src = gst::ElementFactory::make("videotestsrc", None).unwrap();
@@ -95,35 +98,107 @@ use {
 // player_menu.append_submenu(Some("Quality"), &quality_options);
 // get_obj!(gtk::MenuButton, builder, "player-menu-button").set_menu_model(Some(&player_menu));
 
-pub fn configure(app: &Application, builder: &Builder) {
+pub struct PlayerSection {
+    player: Box<dyn GtPlayerBackend>,
+    main_window: ApplicationWindow,
+    chat_section: GtkBox,
+    play_pause_button: Button,
+    volume_button: VolumeButton,
+    timestamp_label: Label,
+    settings_button: MenuButton,
+    hide_chat_button: ToggleButton,
+    fullscreen_button: Button,
+    fullscreen_image: Image,
+    is_fullscreen: RefCell<bool>
+}
 
-    let container: GtkBox = get_obj!(builder, "player-container");
-    let timestamp_label: Label = get_obj!(builder, "timestamp-label");
+impl PlayerSection {
 
-    // glib::timeout_add_local(2000, move || {
+    pub fn configure(app: &Application, builder: &Builder) -> Rc<Self> {
 
-        let mut player = BackendGstreamerOpenGL::new().unwrap();
-        let video_widget = player.get_widget().unwrap();
+        let inner = Rc::new(Self {
+            player: Box::new(BackendGstreamerOpenGL::new().unwrap()),
+            main_window: get_obj!(builder, "main-window"),
+            chat_section: get_obj!(builder, "chat-section"),
+            play_pause_button: get_obj!(builder, "player-play-pause"),
+            volume_button: get_obj!(builder, "player-volume"),
+            timestamp_label: get_obj!(builder, "player-timestamp-label"),
+            settings_button: get_obj!(builder, "player-menu-button"),
+            hide_chat_button: get_obj!(builder, "player-toggle-chat"),
+            fullscreen_button: get_obj!(builder, "player-fullscreen"),
+            fullscreen_image: get_obj!(builder, "fullscreen-image"),
+            is_fullscreen: RefCell::new(false)
+        });
+
+        inner.hide_chat_button.connect_toggled(clone!(@strong inner => move |btn| {
+            inner.chat_section.set_visible(!btn.get_active())
+        }));
+
+        inner.main_window.connect_window_state_event(clone!(@strong inner => move |win, state| {
+            let new_state = state.get_new_window_state();
+            if new_state.contains(gdk::WindowState::FULLSCREEN) {
+                inner.is_fullscreen.replace(true);
+                inner.fullscreen_image.set_from_icon_name(Some("view-restore-symbolic"), IconSize::Button);
+            } else {
+                inner.is_fullscreen.replace(false);
+                inner.fullscreen_image.set_from_icon_name(Some("view-fullscreen-symbolic"), IconSize::Button);
+            }
+            gtk::Inhibit(false)
+        }));
+
+        inner.fullscreen_button.connect_clicked(clone!(@strong inner => move |_| {
+            if *inner.is_fullscreen.borrow() {
+                inner.main_window.unfullscreen()
+            } else {
+                inner.main_window.fullscreen()
+            }
+        }));
+
+        let container: GtkBox = get_obj!(builder, "player-container");
+        let video_widget = inner.player.get_widget().unwrap();
         video_widget.show_all();
-
         container.pack_start(&video_widget, true, true, 0);
 
-        // player.set_uri(Some("https://olback.net/download/pingu.mp4".into())).unwrap();
-        // player.set_uri(Some("file:///home/olback/Videos/bbb4k60.mp4".into())).unwrap();
-        // player.play().unwrap();
+        // inner.player.stop().unwrap();
+        // inner.player.set_uri(Some("file:///home/olback/Videos/test.mp4".into())).unwrap();
+        // inner.player.play().unwrap();
+        // message!("should play :(");
 
-        player.stop().unwrap();
-        player.set_uri(Some("file:///home/olback/Videos/test.mp4".into())).unwrap();
-        player.play().unwrap();
-        message!("should play :(");
-        // player.set_position(100).unwrap();
-        // player.pause().unwrap();
-        // glib::Continue(false)
-    // });
+        inner
 
-    glib::timeout_add_local(200, move || {
-        player.query();
-        glib::Continue(true)
-    });
+    }
 
 }
+
+// pub fn configure(app: &Application, builder: &Builder) {
+
+//     let container: GtkBox = get_obj!(builder, "player-container");
+//     let timestamp_label: Label = get_obj!(builder, "player-timestamp-label");
+
+//     // glib::timeout_add_local(2000, move || {
+
+//         let mut player = BackendGstreamerOpenGL::new().unwrap();
+//         let video_widget = player.get_widget().unwrap();
+//         video_widget.show_all();
+
+//         container.pack_start(&video_widget, true, true, 0);
+
+//         // player.set_uri(Some("https://olback.net/download/pingu.mp4".into())).unwrap();
+//         // player.set_uri(Some("file:///home/olback/Videos/bbb4k60.mp4".into())).unwrap();
+//         // player.play().unwrap();
+
+//         player.stop().unwrap();
+//         player.set_uri(Some("file:///home/olback/Videos/test.mp4".into())).unwrap();
+//         player.play().unwrap();
+//         message!("should play :(");
+//         // player.set_position(100).unwrap();
+//         // player.pause().unwrap();
+//         // glib::Continue(false)
+//     // });
+
+//     glib::timeout_add_local(200, move || {
+//         player.query();
+//         glib::Continue(true)
+//     });
+
+// }

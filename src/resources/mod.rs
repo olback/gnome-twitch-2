@@ -7,6 +7,7 @@ use {
 };
 
 const RESOURCE_DATA: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/gnome-twitch.gresource"));
+pub const APP_ID: &'static str = "net.olback.GnomeTwitch2";
 pub const VERSION: &'static str = include_str!(concat!(env!("OUT_DIR"), "/version.txt"));
 pub const AUTHORS: &'static str = env!("CARGO_PKG_AUTHORS");
 pub const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
@@ -15,6 +16,7 @@ pub const LICENSE: &'static str = include_str!("../../LICENSE");
 pub const KEYRING_NAME: &'static str = "Gnome Twitch 2";
 
 mod cache;
+pub mod loader;
 
 pub fn register_resources() {
 

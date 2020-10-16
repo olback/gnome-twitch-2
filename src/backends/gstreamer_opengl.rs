@@ -30,7 +30,7 @@ pub struct BackendGstreamerOpenGL {
     pad: GstPad,
     ghost_pad: GstGhostPad,
     widget: Widget,
-    uri: Option<String>,
+    uri: RefCell<Option<String>>,
     state: Rc<RefCell<GtPlayerState>>,
     volume: f64,
     buffer_fill: Rc<RefCell<f64>>,
@@ -147,7 +147,7 @@ impl BackendGstreamerOpenGL {
             pad,
             ghost_pad,
             widget,
-            uri: None,
+            uri: RefCell::new(None),
             state,
             volume: 0.3,
             buffer_fill: Rc::new(RefCell::new(0f64)),
@@ -187,29 +187,29 @@ impl BackendGstreamerOpenGL {
 
 impl GtPlayerBackend for BackendGstreamerOpenGL {
 
-    fn play(&mut self) -> GtResult<()> {
+    fn play(&self) -> GtResult<()> {
         p!(self.playbin.set_state(GstState::Playing));
         self.state.replace(GtPlayerState::Loading);
         Ok(())
     }
 
-    fn pause(&mut self) -> GtResult<()> {
+    fn pause(&self) -> GtResult<()> {
         p!(self.playbin.set_state(GstState::Paused));
         Ok(())
     }
 
-    fn stop(&mut self) -> GtResult<()> {
+    fn stop(&self) -> GtResult<()> {
         p!(self.playbin.set_state(GstState::Null));
         Ok(())
     }
 
-    fn set_uri(&mut self, uri: Option<String>) -> GtResult<()> {
-        self.uri = uri;
-        p!(self.playbin.set_property("uri", &self.uri));
+    fn set_uri(&self, uri: Option<String>) -> GtResult<()> {
+        p!(self.playbin.set_property("uri", &uri));
+        self.uri.replace(uri);
         Ok(())
     }
 
-    fn set_position(&mut self, position: u64) -> GtResult<()> {
+    fn set_position(&self, position: u64) -> GtResult<()> {
         p!(self.playbin.set_state(GstState::Paused));
         p!(self.playbin.seek_simple(
             GstSeekFlags::FLUSH | GstSeekFlags::KEY_UNIT | GstSeekFlags::from_bits(3).unwrap(), // TODO: GST_FORMAT_TIME??

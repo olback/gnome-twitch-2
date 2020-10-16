@@ -39,6 +39,11 @@ Author: Edwin Svensson
     <property name="can-focus">False</property>
     <property name="icon-name">view-fullscreen-symbolic</property>
   </object>
+  <object class="GtkImage" id="no-chat-image">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="resource">/net/olback/GnomeTwitch2/images/no-chat</property>
+  </object>
   <object class="GtkImage" id="pause-image">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -189,7 +194,7 @@ Author: Edwin Svensson
           </packing>
         </child>
         <child>
-          <object class="GtkSearchBar">
+          <object class="GtkSearchBar" id="app-search-bar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="show-close-button">True</property>
@@ -217,6 +222,21 @@ Author: Edwin Svensson
             <property name="vexpand">True</property>
             <property name="transition-duration">100</property>
             <property name="transition-type">crossfade</property>
+            <child>
+              <object class="GtkSpinner">
+                <property name="width-request">100</property>
+                <property name="height-request">100</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="active">True</property>
+              </object>
+              <packing>
+                <property name="name">spinner</property>
+                <property name="title" translatable="yes">Spinner</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
@@ -511,6 +531,7 @@ Author: Edwin Svensson
               <packing>
                 <property name="name">views</property>
                 <property name="title" translatable="yes">Views</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -584,7 +605,7 @@ Author: Edwin Svensson
                                             <property name="can-focus">False</property>
                                             <property name="spacing">6</property>
                                             <child>
-                                              <object class="GtkButton">
+                                              <object class="GtkButton" id="player-play-pause">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">True</property>
                                                 <property name="receives-default">True</property>
@@ -599,7 +620,7 @@ Author: Edwin Svensson
                                               </packing>
                                             </child>
                                             <child>
-                                              <object class="GtkVolumeButton">
+                                              <object class="GtkVolumeButton" id="player-volume">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">True</property>
                                                 <property name="focus-on-click">False</property>
@@ -661,7 +682,7 @@ audio-volume-medium-symbolic</property>
                                               </packing>
                                             </child>
                                             <child>
-                                              <object class="GtkLabel" id="timestamp-label">
+                                              <object class="GtkLabel" id="player-timestamp-label">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="label" translatable="yes">3:25:14</property>
@@ -707,7 +728,22 @@ audio-volume-medium-symbolic</property>
                                               </packing>
                                             </child>
                                             <child>
-                                              <object class="GtkButton">
+                                              <object class="GtkToggleButton" id="player-toggle-chat">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">True</property>
+                                                <property name="receives-default">True</property>
+                                                <property name="image">no-chat-image</property>
+                                                <property name="relief">none</property>
+                                                <property name="always-show-image">True</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">1</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkButton" id="player-fullscreen">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">True</property>
                                                 <property name="receives-default">True</property>
@@ -718,7 +754,7 @@ audio-volume-medium-symbolic</property>
                                               <packing>
                                                 <property name="expand">False</property>
                                                 <property name="fill">True</property>
-                                                <property name="position">1</property>
+                                                <property name="position">2</property>
                                               </packing>
                                             </child>
                                           </object>
@@ -774,6 +810,19 @@ audio-volume-medium-symbolic</property>
                                           </packing>
                                         </child>
                                         <child>
+                                          <object class="GtkLabel">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="halign">start</property>
+                                            <property name="label" translatable="yes">ghostgaminggg</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                        <child>
                                           <object class="GtkBox">
                                             <property name="visible">True</property>
                                             <property name="can-focus">False</property>
@@ -806,7 +855,7 @@ audio-volume-medium-symbolic</property>
                                           <packing>
                                             <property name="expand">False</property>
                                             <property name="fill">True</property>
-                                            <property name="position">1</property>
+                                            <property name="position">2</property>
                                           </packing>
                                         </child>
                                       </object>
@@ -842,7 +891,7 @@ audio-volume-medium-symbolic</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
+                  <object class="GtkBox" id="chat-section">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="hexpand">True</property>
@@ -978,22 +1027,6 @@ audio-volume-medium-symbolic</property>
               <packing>
                 <property name="name">player</property>
                 <property name="title" translatable="yes">Player</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinner">
-                <property name="width-request">100</property>
-                <property name="height-request">100</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="active">True</property>
-              </object>
-              <packing>
-                <property name="name">page0</property>
-                <property name="title" translatable="yes">page0</property>
                 <property name="position">2</property>
               </packing>
             </child>
@@ -1018,11 +1051,12 @@ audio-volume-medium-symbolic</property>
             <property name="can-focus">False</property>
             <property name="spacing">6</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="app-search-button">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="image">reload-image</property>
+                <property name="relief">none</property>
                 <property name="always-show-image">True</property>
               </object>
               <packing>
@@ -1036,7 +1070,9 @@ audio-volume-medium-symbolic</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="action-name">app.search</property>
                 <property name="image">search-image</property>
+                <property name="relief">none</property>
                 <property name="always-show-image">True</property>
               </object>
               <packing>
@@ -1061,6 +1097,7 @@ audio-volume-medium-symbolic</property>
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <property name="relief">none</property>
                 <property name="popover">app-popover</property>
                 <child>
                   <object class="GtkImage">

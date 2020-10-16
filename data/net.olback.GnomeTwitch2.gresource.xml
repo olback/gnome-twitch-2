@@ -10,6 +10,6 @@
         <file alias="ui/settings">data/ui/settings.glade</file>
         <file alias="ui/profile">data/ui/profile.glade</file>
         <!-- Images -->
-        <file alias="images/player-placeholder">data/images/player-placeholder.jpg</file>
+        <file alias="images/no-chat">data/images/no-chat.svg</file>
     </gresource>
 </gresources>
