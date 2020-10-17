@@ -1,8 +1,7 @@
 use {
-    gtk::{Application, prelude::*},
+    gtk::Application,
     gio::prelude::*,
-    ui::Ui,
-    twitch::Twitch
+    ui::Ui
 };
 
 mod resources;

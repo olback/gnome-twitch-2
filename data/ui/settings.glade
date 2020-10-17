@@ -16,7 +16,7 @@
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkInfoBar">
+          <object class="GtkInfoBar" id="settings-info-bar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="show-close-button">True</property>
@@ -46,7 +46,16 @@
                 <property name="can-focus">False</property>
                 <property name="spacing">16</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkLabel" id="settings-info-bar-label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">label</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
                 </child>
                 <child>
                   <placeholder/>
@@ -128,7 +137,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText">
+                  <object class="GtkComboBoxText" id="settings-theme">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="valign">center</property>
@@ -186,7 +195,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText">
+                  <object class="GtkComboBoxText" id="settings-default-view">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="valign">center</property>
@@ -244,7 +253,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBoxText">
+                  <object class="GtkComboBoxText" id="settings-default-quality">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="valign">center</property>
@@ -275,7 +284,7 @@
                 <property name="can-focus">False</property>
                 <property name="spacing">6</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="settings-reset-button">
                     <property name="label" translatable="yes">Reset to defaults</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>

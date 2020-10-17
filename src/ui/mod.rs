@@ -1,7 +1,7 @@
 use {
     crate::{get_obj, resource, resources::APP_ID},
     std::rc::Rc,
-    gtk::{Application, ApplicationInhibitFlags, ApplicationWindow, prelude::*},
+    gtk::{Application, ApplicationInhibitFlags, ApplicationWindow, SettingsExt as GtkSettingsExt, prelude::*},
     gio::{SimpleAction, SimpleActionGroup, Settings, SettingsExt, prelude::*},
     glib::clone
 };
@@ -31,6 +31,7 @@ impl Ui {
         let settings = Settings::new(APP_ID);
 
         let main_window: ApplicationWindow = get_obj!(builder, "main-window");
+        main_window.set_default_size(settings.get_int("window-width"), settings.get_int("window-height"));
         main_window.set_application(Some(app));
         main_window.show_all();
         app.inhibit(
@@ -42,12 +43,20 @@ impl Ui {
         let app_action_group = SimpleActionGroup::new();
         main_window.insert_action_group("app", Some(&app_action_group));
 
-        // TODO: Only run when main_window is resized
-        main_window.connect_size_allocate(move |win, _| {
-            let (w, h) = win.get_size();
-            settings.set_int("window-width", w).unwrap();
-            settings.set_int("window-height", h).unwrap();
-            println!("{}x{}", w, h);
+        // Theme change
+        let gtk_settings = gtk::Settings::get_default().unwrap();
+        set_theme(&settings, &gtk_settings);
+        settings.connect_changed(move |settings, key| {
+            if key == "theme" {
+                set_theme(&settings, &gtk_settings);
+            }
+        });
+
+        main_window.connect_delete_event(move |win, _| {
+            let (width, height) = win.get_size();
+            settings.set_int("window-width", width).unwrap();
+            settings.set_int("window-height", height).unwrap();
+            gtk::Inhibit(false)
         });
 
         let inner = Self {
@@ -83,7 +92,6 @@ impl Ui {
             app.quit()
         }));
 
-
         inner
 
     }
@@ -97,4 +105,16 @@ impl Ui {
 
     }
 
+}
+
+fn set_theme(settings: &Settings, gtk_settings: &gtk::Settings) {
+    match settings.get_string("theme").map(|v| v.to_string()) {
+        Some(theme) => match theme.as_str() {
+            "default" => gtk_settings.reset_property("gtk-application-prefer-dark-theme"),
+            "light" => gtk_settings.set_property("gtk-application-prefer-dark-theme", &false).unwrap(),
+            "dark" => gtk_settings.set_property("gtk-application-prefer-dark-theme", &true).unwrap(),
+            _ => { } // Do nothing
+        },
+        _ => { } // Do nothing
+    }
 }
