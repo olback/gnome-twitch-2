@@ -1010,6 +1010,9 @@ audio-volume-medium-symbolic</property>
                             <property name="position">0</property>
                           </packing>
                         </child>
+                        <style>
+                          <class name="chat-entry"/>
+                        </style>
                       </object>
                       <packing>
                         <property name="expand">False</property>

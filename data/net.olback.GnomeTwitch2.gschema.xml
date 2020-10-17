@@ -2,15 +2,31 @@
 <schemalist gettext-domain="perif">
     <schema path="/net/olback/GnomeTwitch2/" id="net.olback.GnomeTwitch2">
         <!-- Mostly stolen from https://github.com/vinszent/gnome-twitch/blob/master/data/com.vinszent.GnomeTwitch.gschema.xml -->
-        <key name="prefer-dark-theme" type="b">
-            <default>true</default>
-            <summary>Prefer dark theme</summary>
-            <description>Whether to use the dark variant of the theme</description>
+        <key type="s" name="theme">
+            <default>'default'</default>
+            <choices>
+                <choice value='default'/>
+                <choice value='light'/>
+                <choice value='dark'/>
+            </choices>
+            <summary>Theme</summary>
+            <description>
+                Which theme to use.
+            </description>
         </key>
-        <key name="default-quality" type="s">
+        <key type="s" name="default-quality">
             <default>'source'</default>
-            <summary>Default quality</summary>
-            <description>Default quality selected when opening a stream</description>
+            <choices>
+                <choice value='source'/>
+                <choice value='high'/>
+                <choice value='medium'/>
+                <choice value='low'/>
+                <choice value='mobile'/>
+            </choices>
+            <summary>Default view</summary>
+            <description>
+                Default view, can be either 'channels', 'follwing' or 'games'.
+            </description>
         </key>
         <key name="volume" type="d">
             <range min="0.0" max="1.0"/>

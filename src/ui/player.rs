@@ -1,9 +1,10 @@
 use {
-    crate::{resource, get_obj, message, warning, error, backends::{GtPlayerBackend, BackendGstreamerOpenGL}},
+    crate::{resource, get_obj, message, warning, error, resources::APP_ID, backends::{GtPlayerBackend, BackendGstreamerOpenGL}},
     std::{rc::Rc, cell::RefCell},
     gtk::{Application, Builder, Box as GtkBox, Button, ToggleButton, IconSize,
         MenuButton, VolumeButton, ApplicationWindow, Image, Label, prelude::*
     },
+    gio::{Settings, SettingsExt, SettingsBindFlags},
     glib::clone
     // gst::prelude::*
 };
@@ -134,7 +135,11 @@ impl PlayerSection {
             inner.chat_section.set_visible(!btn.get_active())
         }));
 
-        inner.main_window.connect_window_state_event(clone!(@strong inner => move |win, state| {
+        let settings = Settings::new(APP_ID);
+        // settings.bind(&inner.volume_button, "volume", &);
+        settings.bind("volume", &inner.volume_button, "value", SettingsBindFlags::DEFAULT);
+
+        inner.main_window.connect_window_state_event(clone!(@strong inner => move |_, state| {
             let new_state = state.get_new_window_state();
             if new_state.contains(gdk::WindowState::FULLSCREEN) {
                 inner.is_fullscreen.replace(true);

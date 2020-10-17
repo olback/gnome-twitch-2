@@ -1,41 +1,65 @@
 @define-color twitch #6441a5;
 
 stackswitcher > button {
-    border-radius: 0;
+  border-radius: 0;
 }
 
 stackswitcher > button:first-child {
-    border-left: none;
+  border-left: none;
 }
 
 stackswitcher > button:last-child {
-    border-right: none;
+  border-right: none;
 }
 
 scrolledwindow {
-    border: none;
+  border: none;
+}
+
+button, modelbutton, row {
+  outline: none;
 }
 
 .media-controls-overlay {
-    background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
-.media-controls-overlay button, .media-controls-overlay label {
-    outline: none;
-    color: #fff;
+.media-controls-overlay button,
+.media-controls-overlay label {
+  outline: none;
+  color: #fff;
+  background-image: none;
 }
 
 .media-controls-overlay button:hover {
-    background-color: rgba(0, 0, 0, 0.4);
-    border-color: @twitch;
+  background-color: rgba(0, 0, 0, 0.4);
+  box-shadow: none;
+  border-color: @twitch;
 }
 
+.media-controls-overlay button:checked,
 .media-controls-overlay button:active {
-    border-color: rgba(0, 0, 0, 0.8);
+  background-color: @twitch;
+  border-color: @twitch;
+}
+
+.media-controls-overlay highlight {
+  background-color: @twitch;
+  border-color: @twitch;
+}
+
+.media-controls-overlay slider:hover {
+  background-color: @twitch;
+  background-image: none;
+  border-color: @twitch;
+  box-shadow: none;
+}
+
+.chat-entry entry:focus {
+  border-color: @twitch;
+  box-shadow: none;
 }
 
 .black-background {
-    background-color: #000;
+  background-color: #000;
 }
-
-
