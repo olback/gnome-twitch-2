@@ -1011,7 +1011,7 @@ audio-volume-medium-symbolic</property>
                           </packing>
                         </child>
                         <style>
-                          <class name=".chat-entry"/>
+                          <class name="chat-entry"/>
                         </style>
                       </object>
                       <packing>
@@ -1054,7 +1054,7 @@ audio-volume-medium-symbolic</property>
             <property name="can-focus">False</property>
             <property name="spacing">6</property>
             <child>
-              <object class="GtkButton" id="app-search-button">
+              <object class="GtkButton">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>

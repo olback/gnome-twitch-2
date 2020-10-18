@@ -1,10 +1,11 @@
 use {
-    crate::error::GtResult,
-    super::cache::{AssetCache, CacheAsset}
+    crate::{p, new_err, error::GtResult},
+    super::cache::AssetCache,
+    std::sync::Mutex
 };
 
 pub struct ResourceLoader {
-    cache: AssetCache
+    cache: Mutex<AssetCache>
 }
 
 impl ResourceLoader {
@@ -12,17 +13,33 @@ impl ResourceLoader {
     pub fn new(cache_path: &str) -> GtResult<Self> {
 
         Ok(Self {
-            cache: AssetCache::new("assets.db")?
+            cache: Mutex::new(AssetCache::new(cache_path)?)
         })
 
     }
 
-    pub fn load(&self, url: &str) -> GtResult<CacheAsset> {
+    pub async fn load(&self, url: &str) -> GtResult<Vec<u8>> {
 
-        match self.cache.load(url)? {
-            Some(asset) => Ok(asset),
+        let res = tokio::task::block_in_place(|| {
+            let lock = self.cache.lock().unwrap();
+            lock.load(url)
+        });
+
+        match res? {
+            Some(asset) => Ok(asset.data),
             None => {
-                todo!()
+                let res = p!(reqwest::get(url).await);
+                if res.status().is_success() {
+                    let bytes = p!(res.bytes().await).to_vec();
+                    // The result here is not important
+                    drop(tokio::task::block_in_place(|| {
+                        let lock = self.cache.lock().unwrap();
+                        lock.save(url, &bytes, false)
+                    }));
+                    Ok(bytes)
+                } else {
+                    Err(new_err!(format!("Failed to load resource {}", url)))
+                }
             }
         }
 

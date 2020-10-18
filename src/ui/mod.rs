@@ -12,6 +12,7 @@ mod auth;
 mod player;
 mod profile;
 mod search;
+mod views;
 
 pub struct Ui {
     pub main_window: ApplicationWindow,
@@ -20,6 +21,7 @@ pub struct Ui {
     pub about_dialog: Rc<about::AboutDialog>,
     pub settings_window: Rc<settings::SettingsWindow>,
     // pub profile_window: Rc<profile::ProfileWindow>,
+    pub views_section: Rc<views::ViewsSection>,
     // pub chat_section: Rc<chat::ChatSection>
     pub player_section: Rc<player::PlayerSection>,
 }
@@ -61,9 +63,12 @@ impl Ui {
 
         let inner = Self {
             search_section: search::SearchSection::configure(&builder),
-            auth_window: auth::AuthWindow::configure(&main_window),
+            auth_window: auth::AuthWindow::configure(app, &main_window),
             about_dialog: about::AboutDialog::configure(&main_window),
             settings_window: settings::SettingsWindow::configure(&main_window),
+            // profile_window
+            views_section: views::ViewsSection::configure(&builder),
+            // chat_section
             player_section: player::PlayerSection::configure(app, &builder),
             main_window
         };
