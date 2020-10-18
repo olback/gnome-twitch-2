@@ -1,9 +1,10 @@
 use {
-    crate::{resource, get_obj, warning, rt, resources::KEYRING_NAME, twitch::Twitch},
+    crate::{resource, get_obj, warning, rt, resources::KEYRING_NAME, twitch::Twitch, user::User, USER},
     std::rc::Rc,
-    gtk::{ApplicationWindow, Button, Window, Builder, Stack, Viewport, prelude::*},
+    gtk::{Application, ApplicationWindow, Button, Window, Builder, Stack, Viewport, prelude::*},
+    gio::prelude::*,
     webkit2gtk::{WebView, WebViewExt, LoadEvent},
-    keyring::Keyring
+    glib::clone
 };
 
 const AUTH_URL: &'static str = "https://id.twitch.tv/oauth2/authorize";
@@ -18,24 +19,27 @@ pub struct AuthWindow {
     window: Window,
     web_view: WebView,
     stack: Stack,
+    continue_button: Button,
     try_again_button: Button
 }
 
 impl AuthWindow {
 
-    pub fn configure(main_window: &ApplicationWindow) -> Rc<Self> {
+    pub fn configure(app: &Application, main_window: &ApplicationWindow) -> Rc<Self> {
 
         let b = Builder::from_resource(resource!("ui/twitch-auth"));
 
         let window: Window = get_obj!(b, "twitch-auth-window");
         let web_view = WebView::new();
         let stack: Stack = get_obj!(b, "twitch-auth-stack");
+        let continue_button: Button = get_obj!(b, "twitch-auth-continue");
         let try_again_button: Button = get_obj!(b, "twitch-auth-try-again");
 
         let inner = Rc::new(Self {
             window,
             web_view,
             stack,
+            continue_button,
             try_again_button
         });
 
@@ -43,22 +47,19 @@ impl AuthWindow {
         inner.window.set_attached_to(Some(main_window));
         inner.stack.set_visible_child_name("spinner");
 
-        inner.window.connect_delete_event(|win, _| {
-            win.hide();
-            gtk::Inhibit(true)
-        });
+        inner.window.connect_delete_event(clone!(@strong app => move |_, _| {
+            app.quit();
+            gtk::Inhibit(false)
+        }));
 
         let wkvp: Viewport = get_obj!(b, "wkvp");
         wkvp.add(&inner.web_view);
 
-        let weak_stack = inner.stack.downgrade();
-        inner.web_view.connect_load_changed(move |vw, le| {
-
-            let stack = weak_stack.upgrade().unwrap();
+        inner.web_view.connect_load_changed(clone!(@strong inner => move |vw, le| {
 
             match le {
                 LoadEvent::Finished => {
-                    stack.set_visible_child_name("webview");
+                    inner.stack.set_visible_child_name("webview");
                     match vw.get_uri() {
                         Some(uri_g) => {
                             let uri = uri_g.to_string();
@@ -75,25 +76,28 @@ impl AuthWindow {
                                         .unwrap()
                                         .get_users(None, None)
                                         .await
-                                }, move |ret| {
+                                }, clone!(@strong inner => move |ret| {
                                     match ret {
-                                        Ok(user) => {
-                                            println!("Welcome, {}", user.data[0].display_name);
-                                            let kr = Keyring::new(KEYRING_NAME, &user.data[0].display_name);
-                                            match kr.set_password(&token) {
-                                                Ok(_) => stack.set_visible_child_name("success"),
+                                        Ok(mut user) => {
+                                            let tw = user.data.remove(0);
+                                            let u = User::new(tw.login, tw.id, token.clone());
+                                            match u.login() {
+                                                Ok(_) => {
+                                                    inner.stack.set_visible_child_name("success");
+                                                    inner.window.set_deletable(false);
+                                                },
                                                 Err(e) => {
                                                     warning!("{}", e);
-                                                    stack.set_visible_child_name("failure");
+                                                    inner.stack.set_visible_child_name("failure");
                                                 }
                                             }
                                         },
                                         Err(e) => {
-                                            warning!("{:#?}", e);
-                                            stack.set_visible_child_name("failure");
+                                            warning!("{}", e);
+                                            inner.stack.set_visible_child_name("failure");
                                         }
                                     }
-                                });
+                                }));
                             }
                         },
                         None => {}
@@ -103,19 +107,22 @@ impl AuthWindow {
                     if let Some(g_uri) = vw.get_uri() {
                         let uri = g_uri.to_string();
                         if uri.starts_with(REDIRECT_URL) {
-                            stack.set_visible_child_name("spinner");
+                            inner.stack.set_visible_child_name("spinner");
                         }
                     }
                 }
                 // _ => stack.set_visible_child_name("spinner")
             }
 
-        });
+        }));
 
-        let inner_clone = Rc::clone(&inner);
-        inner.try_again_button.connect_clicked(move |_| {
-            inner_clone.show();
-        });
+        inner.continue_button.connect_clicked(clone!(@strong inner => move |_| {
+            inner.hide()
+        }));
+
+        inner.try_again_button.connect_clicked(clone!(@strong inner => move |_| {
+            inner.show()
+        }));
 
         inner
 
@@ -125,7 +132,14 @@ impl AuthWindow {
 
         self.stack.set_visible_child_name("spinner");
         self.web_view.load_uri(&Self::url());
+        self.window.set_deletable(true);
         self.window.show_all();
+
+    }
+
+    pub fn hide(&self) {
+
+        self.window.hide();
 
     }
 

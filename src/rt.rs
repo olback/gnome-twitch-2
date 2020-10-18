@@ -1,11 +1,10 @@
 use {
     crate::{p, error::GtResult},
     std::future::Future,
-    tokio::{runtime::{Builder, Runtime}, task::JoinHandle},
-    lazy_static::lazy_static
+    tokio::{runtime::{Builder, Runtime}, task::JoinHandle}
 };
 
-lazy_static! {
+lazy_static::lazy_static! {
     static ref RT: Runtime = runtime_builder().unwrap();
 }
 

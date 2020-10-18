@@ -14,6 +14,8 @@ pub const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOME_PAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 pub const LICENSE: &'static str = include_str!("../../LICENSE");
 pub const KEYRING_NAME: &'static str = "Gnome Twitch 2";
+pub const GAME_COVER_SIZE: (u32, u32) = (300, 400);
+pub const STREAM_COVER_SIZE: (u32, u32) = (320, 180);
 
 mod cache;
 pub mod loader;
