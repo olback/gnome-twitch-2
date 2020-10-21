@@ -17,6 +17,7 @@ macro_rules! impl_from {
 
 pub trait GtErrorTrait: fmt::Display + fmt::Debug + Send {}
 
+#[must_use]
 pub type GtResult<T> = std::result::Result<T, GtError>;
 
 #[derive(Debug)]
@@ -69,3 +70,4 @@ impl_from!(gst::StateChangeError);
 impl_from!(rusqlite::Error);
 impl_from!(reqwest::Error);
 impl_from!(keyring::KeyringError);
+impl_from!(crate::twitch::TwError);

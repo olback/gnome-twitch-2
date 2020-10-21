@@ -13,6 +13,7 @@ mod player;
 mod profile;
 mod search;
 mod views;
+pub mod cards;
 
 pub struct Ui {
     pub main_window: ApplicationWindow,
@@ -24,6 +25,7 @@ pub struct Ui {
     pub views_section: Rc<views::ViewsSection>,
     // pub chat_section: Rc<chat::ChatSection>
     pub player_section: Rc<player::PlayerSection>,
+    main_stack: gtk::Stack
 }
 
 impl Ui {
@@ -70,7 +72,8 @@ impl Ui {
             views_section: views::ViewsSection::configure(&builder),
             // chat_section
             player_section: player::PlayerSection::configure(app, &builder),
-            main_window
+            main_window,
+            main_stack: get_obj!(builder, "main-stack")
         };
 
         // let open_profile_action = SimpleAction::new("profile", None);
@@ -99,6 +102,18 @@ impl Ui {
 
         inner
 
+    }
+
+    pub fn show_main_spinner(&self) {
+        self.main_stack.set_visible_child_name("spinner")
+    }
+
+    pub fn show_views(&self) {
+        self.main_stack.set_visible_child_name("views")
+    }
+
+    pub fn show_player(&self) {
+        self.main_stack.set_visible_child_name("player")
     }
 
     fn builder() -> gtk::Builder {

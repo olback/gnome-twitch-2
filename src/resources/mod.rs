@@ -14,8 +14,11 @@ pub const DESCRIPTION: &'static str = env!("CARGO_PKG_DESCRIPTION");
 pub const HOME_PAGE: &'static str = env!("CARGO_PKG_HOMEPAGE");
 pub const LICENSE: &'static str = include_str!("../../LICENSE");
 pub const KEYRING_NAME: &'static str = "Gnome Twitch 2";
-pub const GAME_COVER_SIZE: (u32, u32) = (300, 400);
-pub const STREAM_COVER_SIZE: (u32, u32) = (320, 180);
+pub const GAME_COVER_SIZE: (i32, i32) = (300, 400);
+pub const STREAM_COVER_SIZE: (i32, i32) = (320, 180);
+
+pub const REQUEST_SIZE: u8 = 50;
+pub const CLIENT_ID: &'static str = "0v7le4jgexwgwggoker7yxrs84dr3x";
 
 mod cache;
 pub mod loader;
@@ -44,7 +47,8 @@ pub fn register_css() {
 
 }
 
-pub fn file_data_to_pixbuf(data: &[u8], size: Option<(i32, i32)>) -> GtResult<gdk_pixbuf::Pixbuf> {
+// TODO: Close loader in case of failure
+pub fn bytes_to_pixbuf(data: &[u8], size: Option<(i32, i32)>) -> GtResult<gdk_pixbuf::Pixbuf> {
 
     let pixbufloader = gdk_pixbuf::PixbufLoader::new();
     if let Some(size) = size {

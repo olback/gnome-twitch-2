@@ -3,11 +3,14 @@ mod error;
 mod response;
 mod utils;
 
-pub use utils::TwitchUtils;
+pub use {
+    utils::TwitchUtils,
+    response::{TwitchResponse, Game, Stream, User},
+    error::{TwError, TwResult},
+};
+
 use {
     builder::TwitchBuilder,
-    error::{TwError, TwResult},
-    response::{TwitchResponse, Game, Stream, User},
     reqwest::{Client, header::{HeaderMap, HeaderName, HeaderValue}},
     url::Url
 };
@@ -55,6 +58,13 @@ pub struct Twitch {
 }
 
 impl Twitch {
+
+    pub fn new(token: Option<String>, client_id: Option<String>) -> Self {
+        Self {
+            token,
+            client_id
+        }
+    }
 
     pub fn builder() -> TwitchBuilder {
         TwitchBuilder {

@@ -1,5 +1,5 @@
 use {
-    crate::{resource, get_obj, warning, rt, resources::KEYRING_NAME, twitch::Twitch, user::User, USER},
+    crate::{resource, get_obj, warning, rt, resources::CLIENT_ID, twitch::Twitch, user::User, USER},
     std::rc::Rc,
     gtk::{Application, ApplicationWindow, Button, Window, Builder, Stack, Viewport, prelude::*},
     gio::prelude::*,
@@ -8,7 +8,6 @@ use {
 };
 
 const AUTH_URL: &'static str = "https://id.twitch.tv/oauth2/authorize";
-const CLIENT_ID: &'static str = "0v7le4jgexwgwggoker7yxrs84dr3x";
 const REDIRECT_URL: &'static str = "gt2://auth";
 const RESPONSE_TYPE: &'static str = "token";
 const SCOPES: &[&'static str] = &[
@@ -83,6 +82,7 @@ impl AuthWindow {
                                             let u = User::new(tw.login, tw.id, token.clone());
                                             match u.login() {
                                                 Ok(_) => {
+                                                    USER.lock().unwrap().replace(u);
                                                     inner.stack.set_visible_child_name("success");
                                                     inner.window.set_deletable(false);
                                                 },

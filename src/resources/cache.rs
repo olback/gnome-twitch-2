@@ -24,7 +24,7 @@ impl AssetCache {
 
     pub fn new(path: &str) -> GtResult<Self> {
 
-        let path = Self::_path()?.join("assets.db");
+        let path = Self::_path()?.join(path);
         let con = p!(Connection::open(&path));
         p!(con.execute(TABLE_LAYOUT, params![]));
 
@@ -42,6 +42,12 @@ impl AssetCache {
         }
 
         let key = Self::key(name);
+
+        // Return early if we removed an old entry with the key specified
+        // since wont exist anyway.
+        if self.remove_old(&key)? == 1 {
+            return Ok(None)
+        }
 
         let mut stmt = p!(self.con.prepare("select * from assets where key = ?1"));
         let mut results = p!(stmt.query_map(params![key], |row| {
@@ -61,7 +67,7 @@ impl AssetCache {
 
     }
 
-    pub fn save(&self, name: &str, data: &[u8], overwrite: bool) -> GtResult<()> {
+    pub fn save(&self, name: &str, data: &[u8], maxage: u32, overwrite: bool) -> GtResult<()> {
 
         if name.len() < 1 {
             return Err(new_err!("Name may not be less than one byte"))
@@ -69,13 +75,15 @@ impl AssetCache {
 
         let key = Self::key(name);
 
+        self.remove_old(&key)?;
+
         if overwrite {
             let mut stmt = p!(self.con.prepare("delete from assets where key = ?1"));
             p!(stmt.execute(params![key]));
         }
 
-        let mut stmt = p!(self.con.prepare("insert into assets (key, data) VALUES(?1, ?2)"));
-        p!(stmt.execute(params![key, data]));
+        let mut stmt = p!(self.con.prepare("insert into assets (maxage, key, data) VALUES(?1, ?2, ?3)"));
+        p!(stmt.execute(params![maxage, key, data]));
 
         Ok(())
 
@@ -92,7 +100,16 @@ impl AssetCache {
 
     }
 
-    // pub fn remove_old(&self, timestamp: u32) -> GtResult<()> { }
+    pub fn remove_old(&self, key: &str) -> GtResult<usize> {
+
+        let affected = p!(self.con.execute(
+            "delete from assets where key = ?1 and (created + maxage) < (strftime('%s', 'now'))",
+            params![key]
+        ));
+
+        Ok(affected)
+
+    }
 
     pub fn clear(&self) -> GtResult<()> {
 

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="320"
+   height="180"
+   viewBox="0 0 84.666665 47.625001"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="thumbnail_404.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="4"
+     inkscape:cx="167.44683"
+     inkscape:cy="74.821417"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
+     inkscape:window-x="1920"
+     inkscape:window-y="34"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#555160;fill-opacity:1;stroke-width:0.0452802;stroke-linecap:round;stroke-linejoin:round"
+       id="rect833"
+       width="84.666664"
+       height="47.625"
+       x="0"
+       y="0"
+       ry="0" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:35.6491px;line-height:1.25;font-family:'Noto Color Emoji';letter-spacing:0px;word-spacing:0px;fill:#a19dac;fill-opacity:1;stroke:none;stroke-width:0.891231;-inkscape-font-specification:'Noto Color Emoji';font-stretch:normal;font-variant:normal;"
+       x="32.961514"
+       y="37.041649"
+       id="text837"><tspan
+         sodipodi:role="line"
+         x="32.961514"
+         y="37.041649"
+         style="stroke-width:0.891231;-inkscape-font-specification:'Noto Color Emoji';font-family:'Noto Color Emoji';font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;fill:#a19dac;fill-opacity:1;"
+         id="tspan839">?</tspan></text>
+  </g>
+</svg>
