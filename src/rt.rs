@@ -19,12 +19,12 @@ fn runtime_builder() -> GtResult<Runtime> {
 
 }
 
-pub fn run<F>(f: F) -> JoinHandle<F::Output>
-    where F: Future + Send + 'static,
-    F::Output: Send + 'static
-{
-    RT.handle().spawn(f)
-}
+// pub fn run<F>(f: F) -> JoinHandle<F::Output>
+//     where F: Future + Send + 'static,
+//     F::Output: Send + 'static
+// {
+//     RT.handle().spawn(f)
+// }
 
 pub fn run_cb_local<F, C>(f: F, mut c: C)
     where F: Future + Send + 'static,
@@ -41,6 +41,6 @@ pub fn run_cb_local<F, C>(f: F, mut c: C)
     });
 }
 
-pub fn run_blocking<F: Future>(f: F) -> F::Output {
-    RT.handle().block_on(f)
-}
+// pub fn run_blocking<F: Future>(f: F) -> F::Output {
+//     RT.handle().block_on(f)
+// }

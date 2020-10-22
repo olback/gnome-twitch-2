@@ -11,7 +11,7 @@ pub struct GameCard {
 
 impl GameCard {
 
-    pub fn new(img_url: String, top: &str) -> Self {
+    pub fn new(img_url: String, game: &str) -> Self {
 
         let fbc = FlowBoxChild::new();
         fbc.set_halign(gtk::Align::Center);
@@ -23,7 +23,7 @@ impl GameCard {
         image.set_size_request(GAME_COVER_SIZE.0, GAME_COVER_SIZE.1);
         image.set_from_resource(Some(resource!("images/boxart-404")));
 
-        let top_label = Label::new(Some(top));
+        let top_label = Label::new(Some(game));
         top_label.set_line_wrap(true);
 
         rt::run_cb_local(async move {

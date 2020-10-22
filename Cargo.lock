@@ -695,6 +695,7 @@ dependencies = [
  "keyring",
  "last-git-commit",
  "lazy_static",
+ "pango",
  "reqwest",
  "rusqlite",
  "serde",

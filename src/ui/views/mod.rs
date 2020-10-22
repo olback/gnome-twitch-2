@@ -43,24 +43,19 @@ impl ViewsSection {
         unsafe { inner.views.connect_notify_unsafe(Some("visible-child-name"), clone!(@strong inner => move |stack, ps| {
             let view_name = stack.get_visible_child_name().map(|v| v.to_string()).unwrap_or(String::new());
             match view_name.as_str() {
-                "channels" => {
-                    println!("Channel");
-                    inner.channels.refresh();
-                },
-                "following" => {
-                    println!("Following");
-                    // TODO: inner.following.refresh();
-                },
-                "games" => {
-                    println!("Games");
-                    // TODO: inner.games.refresh();
-                },
+                "channels" => inner.channels.refresh(),
+                "following" => inner.following.refresh(),
+                "games" => inner.games.refresh(),
                 _ => {}
             }
         })) };
 
         inner
 
+    }
+
+    pub fn notify(&self) {
+        self.views.notify("visible-child-name");
     }
 
 }

@@ -163,11 +163,28 @@ impl PlayerSection {
         let video_widget = inner.player.get_widget().unwrap();
         video_widget.show_all();
         container.pack_start(&video_widget, true, true, 0);
+        container.show_all();
 
         // inner.player.stop().unwrap();
         // inner.player.set_uri(Some("file:///home/olback/Videos/test.mp4".into())).unwrap();
         // inner.player.play().unwrap();
         // message!("should play :(");
+
+        inner.play_pause_button.connect_clicked(clone!(@strong inner => move |btn| {
+            inner.player.play().unwrap();
+        }));
+
+        inner.player.stop().unwrap();
+        inner.player.set_uri(Some("https://video-weaver.cph01.hls.ttvnw.net/v1/playlist/CvMExjUEeRbp_Wspkjh3OeINkkftyQhMVwze9p2tV7TjLBU0KZaUjioAcdMwxwmhKTu33AGBrA-4RV2ajNARTbXnX8DLtg9_tXnPPD-uE8CbIXBuzIHwo19QhKZq30qaxnfj5k6gv5O_GA0iEukiBv-e2QSmTtc_8oOqcz8EBNc8HMMfHF-Yx4g34abWQHFQItzF901d5TtiEo_ZbpgEHpdDaMalqrofmbjZp4EEDwgalPrXn68IvyG4AtV7CXqz9UmT6OMcUq51MaM0834a9qhojCIhmxIaHwEw7wj8JiQXKN67dKc_22TxGu7P3pPi_6FtMS5meqUpk1ARtIF60Fib2s_1IFp6K6RZCZtvK2k8QIG7XmRCNfqXHleZvJ1GRhYTbwja1rtMxHGRkwagp9nud6f2ACPnPygQ16p0g5WRNP4nfzI5Nk-5r-9S8sOQZyBe_LlWxyyraxzNSj92MQC8Or786ALKBvdba5v3-CfegcQcDYNSh_RCwXQvBwd83kj7epKvQsRse4hZ2agjfGSW1J37tw1CQkp5cztFDdJhERQx9BCZMLgSG5AMDMtVNOiessc5uC03zzAjbT8OZLdsnHIZZ2b2Xz-jrbrnnsKhNZ5Oed2MFdgYPjxllAHLliOxo46lY91Wj_ng460S8BS3bZqXbwDTQmRWtTxEMKrQyTYGmkoLHUgCF33X1pVRYYLj68XfrkvVhseslL7VO8wrbLAsy7Dc0HwKbQh0qbjJK8I4cal_IxdF45j0flNScw3ORIest2p2gnx3K9DMW7XqNmVGw8ytPRJbxFPvHU0B0jzREDGGtNvf-KijFgNdAF1z4d_jEhAxgu_6hZKlmKQWYC-nlQhaGgwCHpgFF9ZYHBU2Efs.m3u8".into())).unwrap();
+        // inner.player.play().unwrap();
+
+        // let inner_clone = Rc::clone(&inner);
+        // glib::timeout_add_local(200, move || {
+        //     inner_clone.player.set_uri(Some("https://video-edge-346540.cph01.abs.hls.ttvnw.net/v1/segment/CocFZ7ahlmpWaWxmExZ3ljXyP8LbQakj9qs2c1TluRrAjpgNQ9hI481-9TUlJwfbTnbW__CjONDhA6AmSOcpmF-BP93-8e8zaRwsPXOB9sOnLeAWsJovGKLUdES_9Kcozh4KaUJHkiWjafUKJ5bGCsTu1qtFftD8a_0bFcdf6Jr0Hb_n5OrT9ijiONt_ldhGwJhQKf1qZaPK_HtR56z9-4JvoubWZ5KbjVIDY4FphqOSpIEBqSW26fKUvI10zamFZ0GKOeqoFcmBgyn2bZ-EDzXOKeU37xfAism52bbpNTzLzTeY4eamL1gZo5RJZ4DI_3-e-VR5VEn0iD4fKI5as_7NOcsIZNl0gJ0f1GKhFKVQ750H1SYJ9XnQg4-UuYYnJiOWzxneuerK0igKKRVccABGrFvg_z3SupObj0gMCvI2tRLNpiDHj5GKblkHa3gegd9gFpm9Tqnb1IjUy8QLjYmx6TidUm7vfl9wTQdqPwAeFK_uPzwPMH_T5PCqJg2AqLvogstL5X9-H8hRLaQBwGNwbcFuauXyYWD8p6cH4MxYd53-QfNetWWyzcaNQh6Af-Who2doAdSYtRe81CsvJrriDl8d8HyQIoqE09xz0W0uOiP5d7PbHaGXKFYoQkBs05zF3PxDwR4TpzsQ9bFKs_Ik5zTApGBt4NekHUmqBhDyWybWT-dsOQO3vQspIaeuogjTQEFXahNk1aXeQB-Q-3dnih332EkoD5rKGiq-Os4LP2nLcYv27GELAJMK-hnX0EPHFvAU4XI2ofL3XNUhubZGeR-ZMBcwUN5E3bsDrbfmzRv30iGtTjdKNpnWgi8q9I_dvkgVippMB_IQK7RCif5GrHSYXWmIpZASEH2TjmgvY4peNFiF1eKiQesaDNuy-ao7vC813h5Sqw.ts".into()));
+        //     inner_clone.player.set_position(0);
+        //     inner_clone.player.play().unwrap();
+        //     glib::Continue(true)
+        // });
 
         inner
 

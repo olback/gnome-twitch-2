@@ -53,14 +53,16 @@ impl ChannelsView {
                 clone!(@strong flow, @strong pagination => move |res| {
                     match res {
                         Ok(tw_response) => {
-                            if let Some(new_pagi) = tw_response.pagination {
-                                pagination.borrow_mut().replace(new_pagi.cursor);
+                            if let Some(pagi) = tw_response.pagination {
+                                if let Some(cursor) = pagi.cursor {
+                                    pagination.borrow_mut().replace(cursor);
+                                }
                             }
                             for stream in tw_response.data {
                                 let card = LiveCard::new(
                                     TwitchUtils::thumbnail_sizer(&stream.thumbnail_url, STREAM_COVER_SIZE.0, STREAM_COVER_SIZE.1),
-                                    &stream.user_name,
-                                    ""
+                                    &stream.title,
+                                    &stream.user_name
                                 );
                                 flow.insert(card.get_widget(), -1);
                             }

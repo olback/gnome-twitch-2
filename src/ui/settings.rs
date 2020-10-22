@@ -68,6 +68,12 @@ impl SettingsWindow {
 
     }
 
+    pub fn hide(&self) {
+
+        self.window.hide();
+
+    }
+
     fn builder() -> Builder {
 
         Builder::from_resource(resource!("ui/settings"))

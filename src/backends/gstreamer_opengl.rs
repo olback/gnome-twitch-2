@@ -64,8 +64,6 @@ impl BackendGstreamerOpenGL {
         let tick_clone = Rc::clone(&tick);
         p!(bus.add_watch_local(move |b, msg| {
 
-            let _ = playbin_clone.set_state(GstState::Playing);
-
             match msg.view() {
                 GstMessageView::Buffering(buffering) => {
                     println!("Buffering");
@@ -78,7 +76,7 @@ impl BackendGstreamerOpenGL {
                     let new_state = state_changed.get_current();
 
                     if let Some(src) = msg.get_src() {
-                        if src == *playbin_clone && old_state != new_state{
+                        if src == *playbin_clone && old_state != new_state {
                             println!("StateChanged, {:#?}", new_state);
                             Self::reconfigure_position_tick(&tick_clone, if new_state <= GstState::Paused { 0 } else { 200 });
                             match new_state {
@@ -112,13 +110,13 @@ impl BackendGstreamerOpenGL {
                     }
                 },
                 GstMessageView::Info(info) => {
-                    warning!("Info received from GStreamer {}", info.get_error());
+                    warning!("Info received from GStreamer {:?}", info.get_error());
                 },
                 GstMessageView::Warning(warning) => {
-                    warning!("Warning received from GStreamer {}", warning.get_error());
+                    warning!("Warning received from GStreamer {:?}", warning.get_error());
                 },
                 GstMessageView::Error(error) => {
-                    warning!("Error received from GStreamer {}", error.get_error());
+                    warning!("Error received from GStreamer {:?}", error.get_error());
                 },
                 _ => {}
             };
@@ -134,8 +132,8 @@ impl BackendGstreamerOpenGL {
         p!(ghost_pad.set_active(true));
         p!(video_bin.add_pad(&ghost_pad));
 
-        p!(playbin.set_property("video-sink", &video_bin));
         let widget = p!(p!(video_sink.get_property("widget")).get::<Widget>()).unwrap();
+        p!(playbin.set_property("video-sink", &video_bin));
 
 
         let inner = Self {
@@ -161,7 +159,7 @@ impl BackendGstreamerOpenGL {
 
     }
 
-    pub fn query(&mut self) {
+    pub fn query(&self) {
 
         let position = self.playbin
             .query_position::<gst::ClockTime>()
@@ -188,6 +186,7 @@ impl BackendGstreamerOpenGL {
 impl GtPlayerBackend for BackendGstreamerOpenGL {
 
     fn play(&self) -> GtResult<()> {
+        self.query();
         p!(self.playbin.set_state(GstState::Playing));
         self.state.replace(GtPlayerState::Loading);
         Ok(())

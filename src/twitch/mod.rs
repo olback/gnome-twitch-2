@@ -1,32 +1,32 @@
 mod builder;
 mod error;
-mod response;
+pub mod response;
 mod utils;
 
 pub use {
     utils::TwitchUtils,
-    response::{TwitchResponse, Game, Stream, User},
     error::{TwError, TwResult},
 };
 
 use {
     builder::TwitchBuilder,
     reqwest::{Client, header::{HeaderMap, HeaderName, HeaderValue}},
-    url::Url
+    url::Url,
+    response::*
 };
 
 macro_rules! olen {
     ($v:expr) => {
         match $v {
-            Some(ref _ignore) => 1,
-            None => 0
+            Some(ref _ignore) => 1usize,
+            None => 0usize
         }
     };
 }
 
 macro_rules! ovlen {
     ($v:expr) => {
-        $v.as_ref().map(Vec::len).unwrap_or(0)
+        $v.as_ref().map(Vec::len).unwrap_or(0usize)
     };
 }
 
@@ -272,8 +272,35 @@ impl Twitch {
 
     }
 
-    // https://dev.twitch.tv/docs/api/reference#get-users-follows
-    // pub async fn get_users_follows(&self) -> TwResult<TwitchResponse<T>> {}
+    /// Get a users followers/following.
+    /// Either `from_id` or `to_id` must be set.
+    /// https://dev.twitch.tv/docs/api/reference#get-users-follows
+    pub async fn get_users_follows(
+        &self,
+        after: Option<String>,
+        first: Option<u8>,
+        from_id: Option<String>,
+        to_id: Option<String>
+    ) -> TwResult<TwitchResponse<UserFollow>> {
+
+        let len =
+            olen!(after) +
+            olen!(first) +
+            olen!(from_id) +
+            olen!(to_id);
+
+        let mut query = Vec::with_capacity(len);
+        val_query!("after", after, query);
+        val_query!("first", first, query);
+        val_query!("from_id", from_id, query);
+        val_query!("to_id", to_id, query);
+
+        let client = self.base_request()?;
+        let response = client.get(&Self::url("/helix/users/follows", &query)?).send().await?;
+
+        Ok(response.json().await?)
+
+    }
 
     // https://dev.twitch.tv/docs/api/reference#update-user
     // pub async fn update_user(&self) -> TwResult<TwitchResponse<T>> {}

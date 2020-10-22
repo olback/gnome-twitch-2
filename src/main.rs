@@ -1,12 +1,11 @@
 use {
-    std::{rc::Rc, sync::Mutex},
+    std::sync::Mutex,
     gtk::Application,
     gio::prelude::*,
     glib::clone,
     ui::Ui,
-    resources::{loader::ResourceLoader, STREAM_COVER_SIZE},
-    user::User,
-    twitch::{Twitch, TwitchUtils}
+    resources::loader::ResourceLoader,
+    user::User
 };
 
 mod resources;
@@ -30,6 +29,7 @@ fn main() {
     debug!("Starting...");
 
     gst::init().unwrap(); // Init GST
+    gtk::init().unwrap(); // Init GTK
     resources::register_resources(); // Load resources
 
     let app = Application::new(Some(resources::APP_ID), Default::default()).expect("Failed to create application");
@@ -37,7 +37,7 @@ fn main() {
 
     app.connect_activate(|app| {
         resources::register_css();
-        let u = Rc::new(Ui::build(app));
+        let u = Ui::build(app);
         match User::load() {
             Ok(user) => { USER.lock().unwrap().replace(user); },
             Err(_) => u.auth_window.show()
@@ -46,7 +46,7 @@ fn main() {
             let logged_in = USER.lock().unwrap().is_some();
             match logged_in {
                 true => {
-                    u.views_section.channels.refresh();
+                    u.views_section.notify();
                     u.show_views();
                     glib::Continue(false)
                 },

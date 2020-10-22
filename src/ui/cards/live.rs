@@ -11,7 +11,7 @@ pub struct LiveCard {
 
 impl LiveCard {
 
-    pub fn new(img_url: String, top: &str, bottom: &str) -> Self {
+    pub fn new(img_url: String, title: &str, streamer: &str) -> Self {
 
         let fbc = FlowBoxChild::new();
         fbc.set_halign(gtk::Align::Center);
@@ -22,13 +22,9 @@ impl LiveCard {
         let image = Rc::new(Image::new());
         image.set_size_request(STREAM_COVER_SIZE.0, STREAM_COVER_SIZE.1);
         image.set_from_resource(Some(resource!("images/thumbnail-404")));
+        image.set_tooltip_text(Some(title));
 
-        let top_label = Label::new(Some(top));
-        top_label.set_line_wrap(true);
-        top_label.set_size_request(180, -1);
-
-        let bottom_label = Label::new(Some(bottom));
-        bottom_label.set_line_wrap(true);
+        let bottom_label = Label::new(Some(streamer));
 
         rt::run_cb_local(async move {
             ASSETS.load(&img_url).await
@@ -41,7 +37,6 @@ impl LiveCard {
         }));
 
         vbox.add(&*image);
-        vbox.add(&top_label);
         vbox.add(&bottom_label);
 
         fbc.add(&vbox);

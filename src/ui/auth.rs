@@ -3,7 +3,7 @@ use {
     std::rc::Rc,
     gtk::{Application, ApplicationWindow, Button, Window, Builder, Stack, Viewport, prelude::*},
     gio::prelude::*,
-    webkit2gtk::{WebView, WebViewExt, LoadEvent},
+    webkit2gtk::{WebView, WebViewExt, LoadEvent, WebContextExt, CookieManagerExt},
     glib::clone
 };
 
@@ -130,8 +130,14 @@ impl AuthWindow {
 
     pub fn show(&self) {
 
-        self.stack.set_visible_child_name("spinner");
+        if let Some(context) = self.web_view.get_context() {
+            context.clear_cache();
+            if let Some(cm) = context.get_cookie_manager() {
+                cm.delete_all_cookies()
+            }
+        }
         self.web_view.load_uri(&Self::url());
+        self.stack.set_visible_child_name("spinner");
         self.window.set_deletable(true);
         self.window.show_all();
 

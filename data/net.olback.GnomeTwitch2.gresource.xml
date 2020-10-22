@@ -13,5 +13,6 @@
         <file alias="images/no-chat">data/images/no-chat.svg</file>
         <file alias="images/thumbnail-404">data/images/thumbnail-404.svg</file>
         <file alias="images/boxart-404">data/images/boxart-404.jpg</file>
+        <file alias="images/default-profile-image">data/images/default-profile-image.png</file>
     </gresource>
 </gresources>
