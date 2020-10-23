@@ -320,7 +320,7 @@ Author: Edwin Svensson
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow">
+                      <object class="GtkScrolledWindow" id="games-scroll-window">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="shadow-type">in</property>
@@ -624,8 +624,8 @@ audio-volume-medium-symbolic</property>
                                 </child>
                                 <child type="overlay">
                                   <object class="GtkBox">
-                                    <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="no-show-all">True</property>
                                     <property name="valign">start</property>
                                     <property name="hexpand">True</property>
                                     <property name="vexpand">False</property>

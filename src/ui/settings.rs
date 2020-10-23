@@ -1,5 +1,5 @@
 use {
-    crate::{get_obj, resource, resources::APP_ID},
+    crate::{get_obj, resource, resources::APP_ID, backends::{BACKENDS, backend_id_valid}},
     std::rc::Rc,
     gtk::{ApplicationWindow, Builder, ComboBoxText, Button, InfoBar, Label, Window, prelude::*},
     gio::{Settings, SettingsExt, SettingsBindFlags},
@@ -14,13 +14,26 @@ pub struct SettingsWindow {
 
 impl SettingsWindow {
 
-    pub fn configure(main_window: &ApplicationWindow) -> Rc<Self> {
+    pub fn configure(main_window: &ApplicationWindow, settings: &Settings) -> Rc<Self> {
 
         let builder = Self::builder();
-        let settings = Settings::new(APP_ID);
+
+        let backend_player_cbt = get_obj!(ComboBoxText, builder, "settings-player-backend");
+        for (name, id, _) in BACKENDS {
+            backend_player_cbt.append(Some(*id), *name);
+        }
+        let backend_value = settings.get_string("backend-player").map(|v| v.to_string()).unwrap_or(String::new());
+        if backend_id_valid(&backend_value) {
+            backend_player_cbt.set_active_id(Some(&backend_value));
+        } else {
+            settings.set_string("backend-player", BACKENDS[0].1).expect("Failed to set backend-player");
+            backend_player_cbt.set_active_id(Some(BACKENDS[0].1));
+        }
+
         settings.bind("theme", &get_obj!(ComboBoxText, builder, "settings-theme"), "active-id", SettingsBindFlags::DEFAULT);
         settings.bind("default-view", &get_obj!(ComboBoxText, builder, "settings-default-view"), "active-id", SettingsBindFlags::DEFAULT);
         settings.bind("default-quality", &get_obj!(ComboBoxText, builder, "settings-default-quality"), "active-id", SettingsBindFlags::DEFAULT);
+        settings.bind("backend-player", &backend_player_cbt, "active-id", SettingsBindFlags::DEFAULT);
 
         let info_bar = get_obj!(InfoBar, builder, "settings-info-bar");
         let info_bar_label = get_obj!(Label, builder, "settings-info-bar-label");
@@ -30,12 +43,14 @@ impl SettingsWindow {
         });
 
         get_obj!(Button, builder, "settings-reset-button").connect_clicked(clone!(
+            @weak settings,
             @weak info_bar,
             @weak info_bar_label
          => move |_| {
             settings.reset("theme");
             settings.reset("default-view");
             settings.reset("default-quality");
+            settings.set_string("backend-player", BACKENDS[0].1).unwrap();
             info_bar_label.set_text("Settings reset");
             info_bar.set_visible(true);
             info_bar.set_revealed(true);

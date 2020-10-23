@@ -20,7 +20,7 @@ pub struct ViewsSection {
 
 impl ViewsSection {
 
-    pub fn configure(builder: &Builder) -> Rc<Self> {
+    pub fn configure(builder: &Builder, settings: &Settings) -> Rc<Self> {
 
         let inner = Rc::new(Self {
             views: get_obj!(builder, "views-stack"),
@@ -29,7 +29,6 @@ impl ViewsSection {
             games: games::GamesView::configure(builder),
         });
 
-        let settings = Settings::new(APP_ID);
         let view = settings
             .get_string("default-view")
             .map(|v| v.to_string())

@@ -56,24 +56,25 @@ impl Ui {
             }
         });
 
-        main_window.connect_delete_event(move |win, _| {
-            let (width, height) = win.get_size();
-            settings.set_int("window-width", width).unwrap();
-            settings.set_int("window-height", height).unwrap();
-            gtk::Inhibit(false)
-        });
-
         let inner = Rc::new(Self {
             search_section: search::SearchSection::configure(&builder),
             auth_window: auth::AuthWindow::configure(app, &main_window),
             about_dialog: about::AboutDialog::configure(&main_window),
-            settings_window: settings::SettingsWindow::configure(&main_window),
+            settings_window: settings::SettingsWindow::configure(&main_window, &settings),
             profile_window: profile::ProfileWindow::configure(&main_window, &app_action_group),
-            views_section: views::ViewsSection::configure(&builder),
+            views_section: views::ViewsSection::configure(&builder, &settings),
             // chat_section
-            player_section: player::PlayerSection::configure(app, &builder),
+            // Make sure to configure SettingsWindow before PlayerSection!
+            player_section: player::PlayerSection::configure(app, &builder, &settings),
             main_window,
             main_stack: get_obj!(builder, "main-stack")
+        });
+
+        inner.main_window.connect_delete_event(move |win, _| {
+            let (width, height) = win.get_size();
+            settings.set_int("window-width", width).unwrap();
+            settings.set_int("window-height", height).unwrap();
+            gtk::Inhibit(false)
         });
 
         let logout_action = SimpleAction::new("logout", None);

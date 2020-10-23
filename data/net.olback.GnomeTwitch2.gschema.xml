@@ -72,5 +72,12 @@
                 Default view, can be either 'channels', 'follwing' or 'games'.
             </description>
         </key>
+        <key type="s" name="backend-player">
+            <default>''</default>
+            <summary>Backend Player</summary>
+            <description>
+                Backend Player used to render video
+            </description>
+        </key>
     </schema>
 </schemalist>

@@ -1,192 +1,81 @@
+// Parts are stolen from:
+// https://gitlab.freedesktop.org/gstreamer/gstreamer-rs/-/blob/master/examples/src/bin/gtksink.rs and
+// https://gitlab.freedesktop.org/gstreamer/gstreamer-rs/-/blob/master/examples/src/bin/gtkvideooverlay.rs
+
 use {
-    crate::{p, warning, error::{GtError, GtResult}},
+    crate::{p, warning, new_err, error::GtResult},
     super::{GtPlayerBackend, GtPlayerState},
-    std::{rc::Rc, cell::RefCell},
-    gtk::Widget,
+    std::{rc::Rc, cell::RefCell, os::raw::c_void},
+    gtk::{Widget, prelude::*},
+    gdk::prelude::*,
+    gio::{Settings, SettingsExt, SettingsBindFlags},
+    gstv::prelude::*,
     gst::{
         MessageView as GstMessageView,
-        SeekFlags as GstSeekFlags,
-        ClockTime as GstClockTime,
         State as GstState,
         Element as GstElement,
         ElementFactory as GstElementFactory,
-        Bin as GstBin,
-        Bus as GstBus,
-        Pad as GstPad,
-        GhostPad as GstGhostPad,
         prelude::*
     },
 };
 
-// https://github.com/GStreamer/gstreamer/blob/master/gst/gstformat.h#L56
-const GST_FORMAT_TIME: u32 = 3;
-
-pub struct BackendGstreamerOpenGL {
-    playbin: Rc<GstElement>,
-    upload: GstElement,
-    video_sink: GstElement,
-    video_bin: GstBin,
-    bus: GstBus,
-    pad: GstPad,
-    ghost_pad: GstGhostPad,
-    widget: Widget,
-    uri: RefCell<Option<String>>,
+pub struct BackendGStreamerOpenGL {
+    playbin: GstElement,
     state: Rc<RefCell<GtPlayerState>>,
-    volume: f64,
-    buffer_fill: Rc<RefCell<f64>>,
-    seekable: Rc<RefCell<bool>>,
-    duration: Rc<RefCell<u64>>,
-    position: i64,
-    position_tick_id: Rc<RefCell<Option<glib::SourceId>>>
+    widget: Widget
 }
 
-impl BackendGstreamerOpenGL {
+impl BackendGStreamerOpenGL {
 
-    pub fn new() -> GtResult<Self> {
+    pub fn new(settings: &Settings) -> GtResult<Self> {
 
-        let playbin = Rc::new(p!(GstElementFactory::make("playbin", None)));
-        let video_sink = p!(GstElementFactory::make("gtkglsink", None));
-        let video_bin = GstBin::new(Some("video_bin"));
-        let upload = p!(GstElementFactory::make("glupload", None));
+        let gtkglsink = p!(GstElementFactory::make("gtkglsink", None));
+        let widget = p!(p!(gtkglsink.get_property("widget")).get::<Widget>()).expect("Widget not created");
+        let video_sink = p!(GstElementFactory::make("glsinkbin", None));
+        p!(video_sink.set_property("sink", &gtkglsink));
 
-        let bus = p!(playbin.get_bus().ok_or("Failed to get bus for playbin"));
+        let playbin = p!(GstElementFactory::make("playbin", None));
+        p!(playbin.set_property("video-sink", &video_sink));
 
-        let seekable = Rc::new(RefCell::new(false));
-        let duration = Rc::new(RefCell::new(0u64));
-        let state = Rc::new(RefCell::new(GtPlayerState::Stopped));
-        let tick = Rc::new(RefCell::new(None));
+        let video_overlay = video_sink
+                .dynamic_cast::<gstv::VideoOverlay>()
+                .unwrap()
+                .downgrade();
 
-        // TODO:
-        let playbin_clone = Rc::clone(&playbin);
-        let seekable_clone = Rc::clone(&seekable);
-        let duration_clone = Rc::clone(&duration);
-        let state_clone = Rc::clone(&state);
-        let tick_clone = Rc::clone(&tick);
-        p!(bus.add_watch_local(move |b, msg| {
+            widget.connect_realize(move |video_window| {
+                let video_overlay = match video_overlay.upgrade() {
+                    Some(video_overlay) => video_overlay,
+                    None => return,
+                };
 
-            match msg.view() {
-                GstMessageView::Buffering(buffering) => {
-                    println!("Buffering");
-                    let perc = buffering.get_percent();
-                    let _ = playbin_clone.set_state(if perc < 100 { GstState::Paused } else { GstState::Playing });
-                    state_clone.replace(GtPlayerState::Buffering);
-                },
-                GstMessageView::StateChanged(state_changed) => {
-                    let old_state = state_changed.get_old();
-                    let new_state = state_changed.get_current();
+                let gdk_window = video_window.get_window().unwrap();
 
-                    if let Some(src) = msg.get_src() {
-                        if src == *playbin_clone && old_state != new_state {
-                            println!("StateChanged, {:#?}", new_state);
-                            Self::reconfigure_position_tick(&tick_clone, if new_state <= GstState::Paused { 0 } else { 200 });
-                            match new_state {
-                                GstState::Paused => {
-                                    state_clone.replace(GtPlayerState::Paused);
-                                },
-                                GstState::Ready | GstState::Null => {
-                                    state_clone.replace(GtPlayerState::Stopped);
-                                },
-                                GstState::Playing => {
-                                    state_clone.replace(GtPlayerState::Playing);
-                                },
-                                _ => {}
-                            }
-                        }
-                    }
+                if !gdk_window.ensure_native() {
+                    warning!("Can't create native window for widget");
+                }
 
-                },
-                GstMessageView::DurationChanged(_) => {
-                    println!("DurationChanged");
-                    // TODO: g_object_notify_by_pspec?
-                    match playbin_clone.query_duration::<GstClockTime>() {
-                        Some(time) => {
-                            println!("{:.0}", time);
-                            seekable_clone.replace(true);
-                            duration_clone.replace(time.seconds().unwrap_or(0));
-                        },
-                        None => {
-                            seekable_clone.replace(false);
-                        }
-                    }
-                },
-                GstMessageView::Info(info) => {
-                    warning!("Info received from GStreamer {:?}", info.get_error());
-                },
-                GstMessageView::Warning(warning) => {
-                    warning!("Warning received from GStreamer {:?}", warning.get_error());
-                },
-                GstMessageView::Error(error) => {
-                    warning!("Error received from GStreamer {:?}", error.get_error());
-                },
-                _ => {}
-            };
+                let res = set_window_handle(&video_overlay, &gdk_window);
+                println!("{:#?}", res);
+            });
 
-            glib::Continue(true)
-        }));
-
-        p!(video_bin.add_many(&[&upload, &video_sink]));
-        p!(upload.link(&video_sink));
-
-        let pad = p!(upload.get_static_pad("sink").ok_or("Failed to get static pad 'sink'"));
-        let ghost_pad = gst::GhostPad::new(Some("sink"), pad.get_direction());
-        p!(ghost_pad.set_active(true));
-        p!(video_bin.add_pad(&ghost_pad));
-
-        let widget = p!(p!(video_sink.get_property("widget")).get::<Widget>()).unwrap();
-        p!(playbin.set_property("video-sink", &video_bin));
-
-
-        let inner = Self {
+        Ok(Self {
             playbin,
-            upload,
-            video_sink,
-            video_bin,
-            bus,
-            pad,
-            ghost_pad,
-            widget,
-            uri: RefCell::new(None),
-            state,
-            volume: 0.3,
-            buffer_fill: Rc::new(RefCell::new(0f64)),
-            seekable,
-            duration,
-            position: 0,
-            position_tick_id: tick
-        };
-
-        Ok(inner)
+            state: Rc::new(RefCell::new(GtPlayerState::Stopped)),
+            widget
+        })
 
     }
 
-    pub fn query(&self) {
-
-        let position = self.playbin
-            .query_position::<gst::ClockTime>()
-            .unwrap_or_else(|| 0.into());
-
-        println!("{:.0}", position);
-
-    }
-
-    fn reconfigure_position_tick(tick_id: &Rc<RefCell<Option<glib::SourceId>>>, timeout: usize) {
-
-        if let Some(tid) = tick_id.borrow_mut().take() {
-            glib::source_remove(tid);
-        }
-
-        // if timeout > 0 {
-        //     tick_id.replace(glib::timeout_add_local(200, func: F))
-        // }
-
+    pub fn boxed(settings: &Settings) -> GtResult<Box<dyn GtPlayerBackend>> {
+        let inner = Self::new(settings)?;
+        Ok(Box::new(inner))
     }
 
 }
 
-impl GtPlayerBackend for BackendGstreamerOpenGL {
+impl GtPlayerBackend for BackendGStreamerOpenGL {
 
     fn play(&self) -> GtResult<()> {
-        self.query();
         p!(self.playbin.set_state(GstState::Playing));
         self.state.replace(GtPlayerState::Loading);
         Ok(())
@@ -204,25 +93,42 @@ impl GtPlayerBackend for BackendGstreamerOpenGL {
 
     fn set_uri(&self, uri: Option<String>) -> GtResult<()> {
         p!(self.playbin.set_property("uri", &uri));
-        self.uri.replace(uri);
         Ok(())
     }
 
-    fn set_position(&self, position: u64) -> GtResult<()> {
-        p!(self.playbin.set_state(GstState::Paused));
-        p!(self.playbin.seek_simple(
-            GstSeekFlags::FLUSH | GstSeekFlags::KEY_UNIT | GstSeekFlags::from_bits(3).unwrap(), // TODO: GST_FORMAT_TIME??
-            GstClockTime::from_mseconds(position) * gst::SECOND
-        ));
+    fn get_state(&self) -> GtPlayerState {
+        self.state.borrow().clone()
+    }
+
+    fn get_widget(&self) -> &gtk::Widget {
+        &self.widget
+    }
+
+}
+
+fn set_window_handle(video_overlay: &gstv::VideoOverlay, gdk_window: &gdk::Window) -> GtResult<()> {
+
+    let display_type_name = gdk_window.get_display().get_type().name();
+
+    // Check if we're using X11 or ...
+    if display_type_name == "GdkX11Display" {
+
+        extern "C" {
+            pub fn gdk_x11_window_get_xid(window: *mut glib::object::GObject) -> *mut c_void;
+        }
+
+        #[allow(clippy::cast_ptr_alignment)]
+        unsafe {
+            let xid = gdk_x11_window_get_xid(gdk_window.as_ptr() as *mut _);
+            video_overlay.set_window_handle(xid as usize);
+        }
+
         Ok(())
-    }
 
-    fn get_state(&self) -> GtResult<GtPlayerState> {
-        Ok(self.state.borrow().clone())
-    }
+    } else {
 
-    fn get_widget(&self) -> GtResult<gtk::Widget> {
-        Ok(self.widget.clone())
+        Err(new_err!(format!("Display type {} not supported", display_type_name)))
+
     }
 
 }

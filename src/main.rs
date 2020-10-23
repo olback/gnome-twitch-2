@@ -33,7 +33,7 @@ fn main() {
     resources::register_resources(); // Load resources
 
     let app = Application::new(Some(resources::APP_ID), Default::default()).expect("Failed to create application");
-    glib::set_program_name(Some("GnomeTwitch2"));
+    glib::set_program_name(Some("Gnome Twitch 2"));
 
     app.connect_activate(|app| {
         resources::register_css();

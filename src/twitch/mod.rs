@@ -1,11 +1,13 @@
 mod builder;
 mod error;
-pub mod response;
 mod utils;
+mod extras;
+pub mod response;
 
 pub use {
     utils::TwitchUtils,
     error::{TwError, TwResult},
+    extras::TwitchExtras
 };
 
 use {
@@ -49,7 +51,7 @@ macro_rules! multi_val_query {
 }
 
 const TWITCH_API_URL: &'static str = "https://api.twitch.tv";
-const USER_AGENT: &'static str = concat!("Gnome-Twitch-2 ", include_str!(concat!(env!("OUT_DIR"), "/version.txt")));
+const USER_AGENT: &'static str = concat!("Gnome-Twitch-2/", include_str!(concat!(env!("OUT_DIR"), "/version.txt")));
 
 #[derive(Debug, Clone)]
 pub struct Twitch {
@@ -320,7 +322,7 @@ impl Twitch {
     // https://dev.twitch.tv/docs/api/reference#get-webhook-subscriptions
     // pub async fn get_webhook_subscriptions(&self) -> TwResult<TwitchResponse<T>> {}
 
-    fn base_request(&self) -> TwResult<Client> {
+    pub(super) fn base_request(&self) -> TwResult<Client> {
         let mut dh = HeaderMap::new();
         if let Some(token) = &self.token {
             dh.insert(HeaderName::from_static("authorization"), HeaderValue::from_str(&format!("Bearer {}", token))?);
@@ -334,7 +336,7 @@ impl Twitch {
             .build()?)
     }
 
-    fn url(path: &str, query: &[(&str, String)]) -> TwResult<String> {
+    pub(super) fn url(path: &str, query: &[(&str, String)]) -> TwResult<String> {
 
         let mut url = Url::parse(TWITCH_API_URL)?.join(path)?;
         let mut query_pairs = url.query_pairs_mut();
