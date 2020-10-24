@@ -1,7 +1,10 @@
 use {
-    crate::{USER, get_obj, resource, resources::APP_ID},
-    std::rc::Rc,
-    gtk::{Application, ApplicationInhibitFlags, ApplicationWindow, SettingsExt as GtkSettingsExt, prelude::*},
+    crate::{USER, get_obj, resource, warning, resources::APP_ID},
+    std::{rc::Rc, cell::RefCell},
+    gtk::{
+        Application, ApplicationInhibitFlags, ApplicationWindow, Label, InfoBar,
+        StackTransitionType, SettingsExt as GtkSettingsExt, Button, Stack, prelude::*
+    },
     gio::{SimpleAction, SimpleActionGroup, Settings, SettingsExt, prelude::*},
     glib::clone
 };
@@ -13,7 +16,12 @@ mod player;
 mod profile;
 mod search;
 mod views;
-pub mod cards;
+mod cards;
+mod chat;
+
+thread_local! {
+    static INFO_BAR: RefCell<Option<(Label, Label, InfoBar)>> = RefCell::new(None)
+}
 
 pub struct Ui {
     pub main_window: ApplicationWindow,
@@ -23,9 +31,9 @@ pub struct Ui {
     pub settings_window: Rc<settings::SettingsWindow>,
     pub profile_window: Rc<profile::ProfileWindow>,
     pub views_section: Rc<views::ViewsSection>,
-    // pub chat_section: Rc<chat::ChatSection>
+    pub chat_section: Rc<chat::ChatSection>,
     pub player_section: Rc<player::PlayerSection>,
-    main_stack: gtk::Stack
+    main_stack: Stack
 }
 
 impl Ui {
@@ -63,12 +71,38 @@ impl Ui {
             settings_window: settings::SettingsWindow::configure(&main_window, &settings),
             profile_window: profile::ProfileWindow::configure(&main_window, &app_action_group),
             views_section: views::ViewsSection::configure(&builder, &settings),
-            // chat_section
+            chat_section: chat::ChatSection::configure(&builder),
             // Make sure to configure SettingsWindow before PlayerSection!
             player_section: player::PlayerSection::configure(app, &builder, &settings),
             main_window,
             main_stack: get_obj!(builder, "main-stack")
         });
+
+        INFO_BAR.with(|ib| {
+            ib.borrow_mut().replace((
+                get_obj!(Label, builder, "main-info-title"),
+                get_obj!(Label, builder, "main-info-body"),
+                get_obj!(InfoBar, builder, "main-info")
+            ));
+        });
+
+        let headerbar_stack = get_obj!(Stack, builder, "headerbar-stack");
+        unsafe { inner.main_stack.connect_notify_unsafe(Some("visible-child-name"), clone!(@strong inner => move |stack, _| {
+            let name = stack.get_visible_child_name().map(|n| n.to_string()).unwrap_or(String::new());
+            match name.as_str() {
+                "player" => headerbar_stack.set_visible_child_full("return-to-views", StackTransitionType::SlideRight),
+                _ => {
+                    // TODO:
+                    // inner.chat_section.disconnect()
+                    inner.player_section.stop();
+                    headerbar_stack.set_visible_child_full("main-menu", StackTransitionType::SlideLeft);
+                }
+            }
+        })) };
+
+        get_obj!(Button, builder, "player-return-to-views").connect_clicked(clone!(@strong inner => move |_| {
+            inner.show_views();
+        }));
 
         inner.main_window.connect_delete_event(move |win, _| {
             let (width, height) = win.get_size();
@@ -76,6 +110,20 @@ impl Ui {
             settings.set_int("window-height", height).unwrap();
             gtk::Inhibit(false)
         });
+
+        let reload_action = SimpleAction::new("reload", None);
+        app_action_group.add_action(&reload_action);
+        reload_action.connect_activate(clone!(@strong inner => move |_, _| {
+            let name = inner.main_stack
+                .get_visible_child_name()
+                .map(|n| n.to_string())
+                .unwrap_or(String::new());
+            match name.as_str() {
+                "views" => inner.views_section.reload(),
+                "player" => inner.player_section.reload(),
+                _ => { }
+            }
+        }));
 
         let logout_action = SimpleAction::new("logout", None);
         app_action_group.add_action(&logout_action);
@@ -164,3 +212,31 @@ fn set_theme(settings: &Settings, gtk_settings: &gtk::Settings) {
         _ => { } // Do nothing
     }
 }
+
+pub(super) fn show_info_bar(title: &str, body: &str, kind: gtk::MessageType) {
+
+    INFO_BAR.with(|ib| {
+        if let Some((ib_title, ib_body, infobar)) = &*ib.borrow() {
+            ib_title.set_text(title);
+            ib_body.set_text(body);
+            infobar.set_message_type(kind);
+            infobar.set_visible(true);
+            infobar.set_revealed(true);
+            infobar.show();
+        } else {
+            warning!("Infobar not initialized")
+        }
+    });
+
+}
+
+// pub(super) fn set_cursor<W: glib::IsA<gtk::Widget>>(widget: &W, cursor: gdk::CursorType) {
+
+//     use gdk::WindowExt;
+
+//     let display = gdk::Display::get_default().unwrap();
+//     let window = widget.get_parent_window().unwrap();
+//     let cursor = gdk::Cursor::new_for_display(&display, cursor);
+//     window.set_cursor(Some(&cursor));
+
+// }

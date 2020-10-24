@@ -12,7 +12,9 @@ pub mod gstreamer_opengl;
 )))]
 compile_error!("At least one backend must be enabled");
 
-pub const BACKENDS: &'static [(&'static str, &'static str, fn(volume_button: &gio::Settings) -> GtResult<Box<dyn GtPlayerBackend>>)] = &[
+pub type GtPlayerEventCb = Box<dyn Fn(GtPlayerEvent)>;
+
+pub const BACKENDS: &'static [(&'static str, &'static str, fn(settings: &gio::Settings, cb: GtPlayerEventCb) -> GtResult<Box<dyn GtPlayerBackend>>)] = &[
     #[cfg(feature = "backend-gstreamer")]
     ("GStreamer", "gstreamer", gstreamer::BackendGStreamer::boxed),
     #[cfg(feature = "backend-gstreamer-opengl")]
@@ -37,7 +39,15 @@ pub enum GtPlayerState {
     Paused,
     Stopped,
     Buffering,
-    Loading
+    Loading,
+    Eos
+}
+
+#[derive(Debug, Clone)]
+pub enum GtPlayerEvent {
+    StateChange(GtPlayerState),
+    Warning(String),
+    Error(String)
 }
 
 pub trait GtPlayerBackend {

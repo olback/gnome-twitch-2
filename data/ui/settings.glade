@@ -264,6 +264,7 @@
                       <item id="medium" translatable="yes">Medium</item>
                       <item id="low" translatable="yes">Low</item>
                       <item id="mobile" translatable="yes">Mobile</item>
+                      <item id="audio" translatable="yes">Audio Only</item>
                     </items>
                   </object>
                   <packing>

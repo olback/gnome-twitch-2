@@ -22,6 +22,7 @@
                 <choice value='medium'/>
                 <choice value='low'/>
                 <choice value='mobile'/>
+                <choice value='audio'/>
             </choices>
             <summary>Default view</summary>
             <description>

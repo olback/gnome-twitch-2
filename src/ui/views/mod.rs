@@ -57,4 +57,18 @@ impl ViewsSection {
         self.views.notify("visible-child-name");
     }
 
+    pub fn reload(&self) {
+        let name = self
+            .views
+            .get_visible_child_name()
+            .map(|n| n.to_string())
+            .unwrap_or(String::new());
+        match name.as_str() {
+            "channels" => self.channels.refresh(),
+            "following" => self.following.refresh(),
+            "games" => self.games.refresh(),
+            _ => unreachable!()
+        }
+    }
+
 }

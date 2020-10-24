@@ -4,7 +4,7 @@
 
 use {
     crate::{p, warning, new_err, error::GtResult},
-    super::{GtPlayerBackend, GtPlayerState},
+    super::{GtPlayerBackend, GtPlayerState, GtPlayerEvent, GtPlayerEventCb},
     std::{rc::Rc, cell::RefCell, os::raw::c_void},
     gtk::{Widget, prelude::*},
     gdk::prelude::*,
@@ -27,7 +27,7 @@ pub struct BackendGStreamerOpenGL {
 
 impl BackendGStreamerOpenGL {
 
-    pub fn new(settings: &Settings) -> GtResult<Self> {
+    pub fn new(settings: &Settings, cb: GtPlayerEventCb) -> GtResult<Self> {
 
         let gtkglsink = p!(GstElementFactory::make("gtkglsink", None));
         let widget = p!(p!(gtkglsink.get_property("widget")).get::<Widget>()).expect("Widget not created");
@@ -66,8 +66,8 @@ impl BackendGStreamerOpenGL {
 
     }
 
-    pub fn boxed(settings: &Settings) -> GtResult<Box<dyn GtPlayerBackend>> {
-        let inner = Self::new(settings)?;
+    pub fn boxed(settings: &Settings, cb: GtPlayerEventCb) -> GtResult<Box<dyn GtPlayerBackend>> {
+        let inner = Self::new(settings, cb)?;
         Ok(Box::new(inner))
     }
 

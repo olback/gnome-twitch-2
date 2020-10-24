@@ -1,7 +1,7 @@
 use {
     std::rc::Rc,
     crate::{ASSETS, rt, resource, resources::{GAME_COVER_SIZE, bytes_to_pixbuf}},
-    gtk::{FlowBoxChild, Box as GtkBox, Image, Label, prelude::*},
+    gtk::{FlowBoxChild, Box as GtkBox, EventBox, Image, Label, prelude::*},
     glib::clone
 };
 
@@ -17,7 +17,9 @@ impl GameCard {
         fbc.set_halign(gtk::Align::Center);
         fbc.set_valign(gtk::Align::Start);
 
+        let evbox = EventBox::new();
         let vbox = GtkBox::new(gtk::Orientation::Vertical, 6);
+        evbox.add(&vbox);
 
         let image = Rc::new(Image::new());
         image.set_size_request(GAME_COVER_SIZE.0, GAME_COVER_SIZE.1);
@@ -39,8 +41,15 @@ impl GameCard {
         vbox.add(&*image);
         vbox.add(&top_label);
 
-        fbc.add(&vbox);
+        fbc.add(&evbox);
         fbc.show_all();
+
+        evbox.connect_button_press_event(|evbox, evbutton| {
+            if evbutton.get_button() == 1 {
+                println!("Game clicked");
+            }
+            gtk::Inhibit(false)
+        });
 
         Self {
             flow_box_child: fbc

@@ -4,7 +4,7 @@
 
 use {
     crate::{p, error::GtResult},
-    super::{GtPlayerBackend, GtPlayerState},
+    super::{GtPlayerBackend, GtPlayerState, GtPlayerEvent, GtPlayerEventCb},
     std::{rc::Rc, cell::RefCell},
     gtk::{Widget, prelude::*},
     gio::{Settings, SettingsExt, SettingsBindFlags},
@@ -15,17 +15,19 @@ use {
         ElementFactory as GstElementFactory,
         prelude::*
     },
+    glib::clone
 };
 
 pub struct BackendGStreamer {
-    playbin: GstElement,
+    playbin: Rc<GstElement>,
     state: Rc<RefCell<GtPlayerState>>,
+    cb: Rc<GtPlayerEventCb>,
     widget: Widget
 }
 
 impl BackendGStreamer {
 
-    pub fn new(settings: &Settings) -> GtResult<Self> {
+    pub fn new(settings: &Settings, cb: GtPlayerEventCb) -> GtResult<Self> {
 
         let (video_sink, widget) = {
             let sink = gst::ElementFactory::make("gtksink", None).unwrap();
@@ -43,16 +45,92 @@ impl BackendGStreamer {
             SettingsBindFlags::DEFAULT
         );
 
-        Ok(Self {
-            playbin,
+        let inner = Self {
+            playbin: Rc::new(playbin),
             state: Rc::new(RefCell::new(GtPlayerState::Stopped)),
+            cb: Rc::new(cb),
             widget
-        })
+        };
+
+        let bus = p!(inner.playbin.get_bus().ok_or("Could not get playbin bus"));
+        p!(bus.add_watch_local(clone!(
+            @strong inner.playbin as playbin,
+            @strong inner.state as state,
+            @strong inner.cb as cb
+        => move |_, msg| {
+
+            let evt = match msg.view() {
+
+                GstMessageView::Buffering(buffering) => {
+                    state.replace(GtPlayerState::Buffering);
+                    let perc = buffering.get_percent();
+                    drop(playbin.set_state(if perc < 100 {
+                        GstState::Paused
+                    } else {
+                        GstState::Playing
+                    }));
+                    Some(GtPlayerEvent::StateChange(GtPlayerState::Buffering))
+                },
+
+                GstMessageView::Eos(_) => {
+                    state.replace(GtPlayerState::Eos);
+                    drop(playbin.set_state(GstState::Null));
+                    Some(GtPlayerEvent::StateChange(GtPlayerState::Eos))
+                },
+
+                GstMessageView::StateChanged(state_change) => {
+                    let old_state = state_change.get_old();
+                    let new_state = state_change.get_current();
+                    if let Some(src) = msg.get_src() {
+                        if src == *playbin && old_state != new_state {
+                            match new_state {
+                                GstState::Paused => {
+                                    state.replace(GtPlayerState::Paused);
+                                    Some(GtPlayerEvent::StateChange(GtPlayerState::Paused))
+                                },
+                                GstState::Ready | GstState::Null => {
+                                    state.replace(GtPlayerState::Stopped);
+                                    Some(GtPlayerEvent::StateChange(GtPlayerState::Stopped))
+                                },
+                                GstState::Playing => {
+                                    state.replace(GtPlayerState::Playing);
+                                    Some(GtPlayerEvent::StateChange(GtPlayerState::Playing))
+                                },
+                                _ => None
+                            }
+                        } else { None }
+                    } else { None }
+                },
+
+                GstMessageView::Warning(warning) => {
+                    Some(GtPlayerEvent::Warning(format!("{}", warning.get_error())))
+                },
+
+                GstMessageView::Error(error) => {
+                    Some(GtPlayerEvent::Error(format!("{}", error.get_error())))
+                }
+
+                _ => None
+
+            };
+
+            if let Some(e) = evt {
+                // if let Some(ptr) = *cb {
+                //     ptr(e)
+                // }
+                cb(e)
+            }
+
+            glib::Continue(true)
+
+        })));
+
+        Ok(inner)
 
     }
 
-    pub fn boxed(settings: &Settings) -> GtResult<Box<dyn GtPlayerBackend>> {
-        let inner = Self::new(settings)?;
+    pub fn boxed(settings: &Settings, cb: GtPlayerEventCb) -> GtResult<Box<dyn GtPlayerBackend>> {
+        let inner = Self::new(settings, cb)?;
         Ok(Box::new(inner))
     }
 
@@ -73,6 +151,9 @@ impl GtPlayerBackend for BackendGStreamer {
 
     fn stop(&self) -> GtResult<()> {
         p!(self.playbin.set_state(GstState::Null));
+        // Emit event here since playbin does not emit anything when set to null
+        self.state.replace(GtPlayerState::Stopped);
+        (self.cb)(GtPlayerEvent::StateChange(self.state.borrow().clone()));
         Ok(())
     }
 

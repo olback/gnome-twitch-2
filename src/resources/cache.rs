@@ -132,7 +132,7 @@ impl AssetCache {
 
     fn _path() -> GtResult<PathBuf> {
 
-        let p = p!(dirs::cache_dir().map(|p| p.join("gt2")).ok_or("Failed to obtain cache dir"));
+        let p = p!(dirs::cache_dir().map(|p| p.join("gnome-twitch-2")).ok_or("Failed to obtain cache dir"));
 
         if !p.exists() {
             p!(fs::create_dir_all(&p));

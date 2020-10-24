@@ -2,11 +2,11 @@
 Name=Gnome Twitch 2
 Comment=Watch your favorite Twitch streamers in an GTK app!
 # Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-Keywords=peripheral;peripheral;battery;control;
+Keywords=stream;video;twitch;live;games;
 Exec=gnome-twitch-2
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
 Icon=input-gaming
 Terminal=false
 Type=Application
 StartupNotify=true
-Categories=GNOME;GTK;Media;
+Categories=GTK;GNOME;AudioVideo;Player;Video;

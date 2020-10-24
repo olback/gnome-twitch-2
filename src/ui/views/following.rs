@@ -24,6 +24,12 @@ impl FollowingView {
             scroll: get_obj!(builder, "following-scroll-window")
         });
 
+        inner.flow.connect_child_activated(|_, child| {
+            // child.notify("button-press-event");
+            child.event(&gdk::Event::new(gdk::EventType::ButtonPress));
+
+        });
+
         inner.scroll.connect_edge_reached(clone!(@strong inner => move |_, pos| {
             if pos == gtk::PositionType::Bottom {
                 inner.load_next()
