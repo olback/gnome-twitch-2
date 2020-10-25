@@ -11,7 +11,9 @@ const AUTH_URL: &'static str = "https://id.twitch.tv/oauth2/authorize";
 const REDIRECT_URL: &'static str = "gt2://auth";
 const RESPONSE_TYPE: &'static str = "token";
 const SCOPES: &[&'static str] = &[
-    "user:read:email"
+    "user:read:email", // Is this needed?
+    "chat:read",
+    "chat:edit"
 ];
 
 pub struct AuthWindow {
