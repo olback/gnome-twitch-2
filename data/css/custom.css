@@ -20,6 +20,7 @@ button, modelbutton, row {
   outline: none;
 }
 
+.views-spinner-overlay > box,
 .media-controls-overlay {
   background-color: rgba(0, 0, 0, 0.4);
 }

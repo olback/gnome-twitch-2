@@ -4,7 +4,7 @@ use {
     gio::{Settings, SettingsExt}
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct User {
     pub username: String,
     pub user_id: String,

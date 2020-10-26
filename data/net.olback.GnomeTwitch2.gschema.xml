@@ -14,7 +14,7 @@
                 Which theme to use.
             </description>
         </key>
-        <key type="s" name="default-quality">
+        <!-- <key type="s" name="default-quality">
             <default>'source'</default>
             <choices>
                 <choice value='source'/>
@@ -28,7 +28,7 @@
             <description>
                 Default view, can be either 'channels', 'follwing' or 'games'.
             </description>
-        </key>
+        </key> -->
         <key name="volume" type="d">
             <range min="0.0" max="1.0"/>
             <default>0.3</default>

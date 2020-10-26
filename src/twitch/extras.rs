@@ -7,10 +7,10 @@ const TWITCH_ACCESS_TOKEN_CLIENT_ID: &'static str = "kimne78kx3ncx6brgo4mv6wki5h
 
 #[derive(Clone, Debug, serde::Deserialize)]
 pub struct AccessToken {
-    token: String,
-    sig: String,
-    mobile_restricted: bool,
-    expires_at: String
+    pub token: String,
+    pub sig: String,
+    pub mobile_restricted: bool,
+    pub expires_at: String
 }
 
 pub struct TwitchExtras;
@@ -52,7 +52,7 @@ impl TwitchExtras {
 
 fn usher_url(username: &str, query: &[(&str, String)]) -> TwResult<String> {
 
-    let mut url = url::Url::parse(&format!("https://usher.ttvnw.net/api/channel/hls/{}.m3u8", username))?;
+    let mut url = url::Url::parse(&format!("https://usher.ttvnw.net/api/channel/hls/{}.m3u8", username.to_lowercase()))?;
     let mut query_pairs = url.query_pairs_mut();
     for (k, v) in query {
         query_pairs.append_pair(k, &v);

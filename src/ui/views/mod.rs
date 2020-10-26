@@ -4,7 +4,7 @@ use {
     std::rc::Rc,
     gtk::{Builder, Stack, FlowBox, prelude::*},
     gio::{Settings, SettingsExt},
-    glib::clone
+    glib::{clone, Sender}
 };
 
 mod channels;
@@ -20,13 +20,13 @@ pub struct ViewsSection {
 
 impl ViewsSection {
 
-    pub fn configure(builder: &Builder, settings: &Settings) -> Rc<Self> {
+    pub fn configure(builder: &Builder, settings: &Settings, tx: Sender<(String, String)>) -> Rc<Self> {
 
         let inner = Rc::new(Self {
             views: get_obj!(builder, "views-stack"),
-            channels: channels::ChannelsView::configure(builder),
-            following: following::FollowingView::configure(builder),
-            games: games::GamesView::configure(builder),
+            channels: channels::ChannelsView::configure(builder, tx.clone()),
+            following: following::FollowingView::configure(builder, tx.clone()),
+            games: games::GamesView::configure(builder, tx),
         });
 
         let view = settings

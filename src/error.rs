@@ -71,3 +71,4 @@ impl_from!(rusqlite::Error);
 impl_from!(reqwest::Error);
 impl_from!(keyring::KeyringError);
 impl_from!(crate::twitch::TwError);
+// impl_from!()

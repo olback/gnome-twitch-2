@@ -10,7 +10,7 @@ pub struct Stream {
     pub started_at: String,
     pub language: String,
     pub thumbnail_url: String,
-    pub tag_ids: Vec<String>
+    pub tag_ids: Option<Vec<String>>
 }
 
 // {

@@ -694,6 +694,7 @@ dependencies = [
  "keyring",
  "last-git-commit",
  "lazy_static",
+ "m3u8-rs",
  "reqwest",
  "rusqlite",
  "serde",
@@ -1111,9 +1112,9 @@ dependencies = [
 
 [[package]]
 name = "keyring"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8835abb669913b7b2b01e12c8bab96d2b2578ee4b80cb997677465f8e6660323"
+checksum = "8c884cbd309556b3cf683f50142f4af7b572c05337adfb06ad1a29035469a3ae"
 dependencies = [
  "byteorder",
  "secret-service",
@@ -1135,6 +1136,19 @@ name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+
+[[package]]
+name = "lexical-core"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db65c6da02e61f55dae90a0ae427b2a5f6b3e8db09f58d10efab23af92592616"
+dependencies = [
+ "arrayvec",
+ "bitflags",
+ "cfg-if 0.1.10",
+ "ryu",
+ "static_assertions",
+]
 
 [[package]]
 name = "libc"
@@ -1200,6 +1214,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fabed175da42fed1fa0746b0ea71f412aa9d35e76e95e59b192c64b9dc2bf8b"
 dependencies = [
  "cfg-if 0.1.10",
+]
+
+[[package]]
+name = "m3u8-rs"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3705662c95db3de02183efd7a18b25ca5c61b903bd1fcd2d7fd54301cc6fc17d"
+dependencies = [
+ "nom",
 ]
 
 [[package]]
@@ -1327,6 +1350,17 @@ dependencies = [
  "cfg-if 0.1.10",
  "libc",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "nom"
+version = "5.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffb4262d26ed83a1c0a33a38fe2bb15797329c85770da05e6b828ddb782627af"
+dependencies = [
+ "lexical-core",
+ "memchr",
+ "version_check",
 ]
 
 [[package]]
@@ -2042,6 +2076,12 @@ dependencies = [
  "pkg-config",
  "system-deps",
 ]
+
+[[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strum"

@@ -9,28 +9,18 @@ use {
         Application, Builder, Box as GtkBox, Button, ToggleButton, IconSize, MessageType, Spinner,
         Revealer, MenuButton, VolumeButton, ApplicationWindow, Image, Label, EventBox, prelude::*
     },
-    gio::{Settings, SettingsExt, SettingsBindFlags},
+    gio::{SimpleAction, Settings, SettingsExt, SettingsBindFlags, prelude::*},
     glib::clone
     // gst::prelude::*
 };
 
-// let player_menu = gio::Menu::new();
-// let quality_options = gio::Menu::new();
-// let quality_options_source = gio::MenuItem::new(Some("Source (1080p60)"), None);
-// quality_options_source.set_attribute_value("type", Some(&"radioitem".into()));
-// quality_options.append_item(&quality_options_source);
-// let quality_options_high = gio::MenuItem::new(Some("High (720p60)"), None);
-// quality_options.append_item(&quality_options_high);
-// let quality_options_medium = gio::MenuItem::new(Some("Medium (480p)"), None);
-// quality_options.append_item(&quality_options_medium);
-// let quality_options_low = gio::MenuItem::new(Some("Low (360p)"), None);
-// quality_options.append_item(&quality_options_low);
-// player_menu.append_submenu(Some("Quality"), &quality_options);
-// get_obj!(gtk::MenuButton, builder, "player-menu-button").set_menu_model(Some(&player_menu));
-
 pub struct PlayerSection {
     player: Box<dyn GtPlayerBackend>,
-    settings_button: MenuButton
+    title: Label,
+    streamer: Label,
+    viewers: Label,
+    settings_button: MenuButton,
+    quality_selection_action: SimpleAction
 }
 
 impl PlayerSection {
@@ -40,6 +30,14 @@ impl PlayerSection {
         let is_fullscreen = Rc::new(RefCell::new(false));
         let fullscreen_image = get_obj!(Image, builder, "fullscreen-image");
         let main_window = get_obj!(ApplicationWindow, builder, "main-window");
+        let player_action_group = gio::SimpleActionGroup::new();
+        let quality_selection_action = gio::SimpleAction::new_stateful(
+            "quality-selection",
+            Some(&glib::VariantType::new("s").unwrap()),
+            &String::new().into()
+        );
+        main_window.insert_action_group("player", Some(&player_action_group));
+        player_action_group.add_action(&quality_selection_action);
         main_window.connect_window_state_event(clone!(@strong is_fullscreen => move |_, state| {
             let new_state = state.get_new_window_state();
             if new_state.contains(gdk::WindowState::FULLSCREEN) {
@@ -128,14 +126,26 @@ impl PlayerSection {
 
         let inner = Rc::new(Self {
             player: get_backend(settings)(settings, Box::new(cb)).unwrap(),
-            settings_button: get_obj!(builder, "player-menu-button")
+            title: get_obj!(builder, "player-title"),
+            streamer: get_obj!(builder, "player-streamer"),
+            viewers: get_obj!(builder, "player-viewers"),
+            settings_button: get_obj!(builder, "player-menu-button"),
+            quality_selection_action
         });
+
+        inner.quality_selection_action.connect_activate(clone!(@strong inner => move |act, url| {
+            if let Some(ref val) = url {
+                act.set_state(val);
+            }
+            drop(inner.player.stop());
+            drop(inner.player.set_uri(Some(url.map(|u| u.to_string().replace("'", "")).expect("Failed to get url from variant"))));
+            drop(inner.player.play());
+        }));
 
         let container: GtkBox = get_obj!(builder, "player-container");
         let video_widget = inner.player.get_widget();
         container.pack_start(video_widget, true, true, 0);
-        container.show_all();
-        video_widget.realize();
+        video_widget.show_all();
 
         play_pause_button.connect_clicked(clone!(@strong inner => move |_| {
             match inner.player.get_state() {
@@ -149,48 +159,9 @@ impl PlayerSection {
                         show_info_bar("Could not play", &format!("{}", e), MessageType::Error)
                     }
                 }
-                _ => {
-                    // TODO: Remove this
-                    inner.player.set_uri(Some("https://video-weaver.cph01.hls.ttvnw.net/v1/playlist/CvQEHm17eVmE0IoW8S99plmLydkQASzzjKzRrJHfQ58fWWuWOFBVR2UXT-ps32qkj0XhFDkTxSCKL2jqlMn1o_nmJGv6N8SZmDjVMmt7ACVOjzxp_iha_FGuKsb8syK8qJYOeIudKJjNv7wACMRmZKllsMBly0ACoerVnYD7MM6HN8aregujJ7D6q3oCEL7kJRcpg1ZXi7zfVnswXMZ1E4yBHdVaPWHPuJxT2-RnrSSm5XljQ2U1ceujxu_4mseyvEiNKNTMWeAkY-VA-7PL-lfBTL1rTT-uZjO1Hm24BGIMN1Vtm2QrxlVxsE_PCghsv84DrnTHvXAKe-e05NZxiLxqB8CeDqIaxyawj57-DMpzYfxbF6uey2isySpb0s4lzmpocIrIytt8joixxkMh4tGY0DCKNbbXhetanVyDJa9Q9_FzRcaGr3UhBOh53xwiMB1Ubr6UDKGQvzOL4MgdP2k0KN-lz4YuptBxBE8xUSFePqzB2k4tiG3DXFo1R4lDlC45seny7rlz0-IrI63veu7g8nGZ81B-jkIscnzjNt_w-h2n-cKgJdljh70rIDeB-p6YeVRcV73_prCOVquxOO-oSaf1Weyx42aclHVUrBb1EmyX9AALXBJhcW2uMx2BLJm5HyorimrpS5kwyucpxJSQUrx6QP3gu_mho2hAtlup6Vx5s4n_YcQN7dffv-5xaeBpdGHNi__qH35j3f54cqFnzHvcAjBtJlsPbbSyAzI8ds1PQSUkWXeXLQj0xQy66SV-Vc1fSmw0fuwpb-Unf3QjNobhqGENZi7piYjmjoCOKf3IMPo5TgpbI23IEEZpCOxzw3IcSRIQHOeMKu7TYoiwdM1PRSHLzRoMaOqwNLPttjtgbQQr.m3u8".into()));
-                    inner.player.play();
-                }
+                _ => { }
             }
         }));
-
-        // let play_image = get_obj!(Image, builder, "play-image");
-        // let pause_image = get_obj!(Image, builder, "pause-image");
-        // inner.player.set_state_cb(|evt| {
-        //     println!("New state: {:#?}", evt);
-        //     match evt {
-        //         GtPlayerEvent::StateChange(state) => match state {
-        //             GtPlayerState::Eos => {
-        //                 // play_pause_button.set_image(Some(&play_image));
-        //                 show_info_bar("The stream has ended", "", MessageType::Info);
-        //             },
-        //             GtPlayerState::Buffering => {
-
-        //             },
-        //             GtPlayerState::Playing => {
-
-        //             },
-        //             GtPlayerState::Paused => {
-
-        //             },
-        //             GtPlayerState::Stopped => {
-
-        //             },
-        //             _ => { }
-        //         },
-        //         GtPlayerEvent::Warning(warning) => {
-        //             // show_info_bar("Player warning", &warning, MessageType::Warning)
-        //             warning!("{}", warning);
-        //         },
-        //         GtPlayerEvent::Error(error) => {
-        //             show_info_bar("Player error", &error, MessageType::Error);
-        //             warning!("{}", error);
-        //         }
-        //     }
-        // });
 
         inner
 
@@ -199,6 +170,65 @@ impl PlayerSection {
     pub fn reload(&self) {
 
         warning!("TODO");
+
+    }
+
+    pub fn set_title(&self, title: &str) {
+
+        self.title.set_text(title)
+
+    }
+
+    pub fn set_streamer(&self, title: &str) {
+
+        self.streamer.set_text(title)
+
+    }
+
+    pub fn set_views(&self, views: u32) {
+
+        self.viewers.set_text(&format!("{}", views))
+
+    }
+
+    pub fn set_qualities(&self, qualities: Vec<(String, String)>) {
+
+        // let player_menu = gio::Menu::new();
+        // let quality_options = gio::Menu::new();
+        // let quality_options_source = gio::MenuItem::new(Some("Source (1080p60)"), None);
+        // quality_options_source.set_attribute_value("type", Some(&"radioitem".into()));
+        // quality_options.append_item(&quality_options_source);
+        // let quality_options_high = gio::MenuItem::new(Some("High (720p60)"), None);
+        // quality_options.append_item(&quality_options_high);
+        // let quality_options_medium = gio::MenuItem::new(Some("Medium (480p)"), None);
+        // quality_options.append_item(&quality_options_medium);
+        // let quality_options_low = gio::MenuItem::new(Some("Low (360p)"), None);
+        // quality_options.append_item(&quality_options_low);
+        // player_menu.append_submenu(Some("Quality"), &quality_options);
+        // get_obj!(gtk::MenuButton, builder, "player-menu-button").set_menu_model(Some(&player_menu));
+
+        let player_menu = gio::Menu::new();
+        for (name, url) in qualities {
+            let menu_item = gio::MenuItem::new(
+                Some(&name.trim().replace("source", "Source").replace("audio_only", "Audio Only")),
+                None
+            );
+            menu_item.set_action_and_target_value(
+                Some("player.quality-selection"),
+                Some(&url.into())
+            );
+            player_menu.append_item(&menu_item);
+        }
+
+        self.settings_button.set_menu_model(Some(&player_menu));
+
+    }
+
+    pub fn play(&self, uri: String) {
+
+        self.quality_selection_action.set_state(&uri.clone().into());
+        drop(self.player.set_uri(Some(uri)));
+        drop(self.player.play());
 
     }
 

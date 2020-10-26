@@ -11,17 +11,16 @@ use {
     gio::{Settings, SettingsExt, SettingsBindFlags},
     gstv::prelude::*,
     gst::{
-        MessageView as GstMessageView,
         State as GstState,
         Element as GstElement,
-        ElementFactory as GstElementFactory,
-        prelude::*
+        ElementFactory as GstElementFactory
     },
 };
 
 pub struct BackendGStreamerOpenGL {
-    playbin: GstElement,
+    playbin: Rc<GstElement>,
     state: Rc<RefCell<GtPlayerState>>,
+    cb: Rc<GtPlayerEventCb>,
     widget: Widget
 }
 
@@ -37,6 +36,13 @@ impl BackendGStreamerOpenGL {
         let playbin = p!(GstElementFactory::make("playbin", None));
         p!(playbin.set_property("video-sink", &video_sink));
 
+        settings.bind(
+            "volume",
+            &playbin,
+            "volume",
+            SettingsBindFlags::DEFAULT
+        );
+
         let video_overlay = video_sink
                 .dynamic_cast::<gstv::VideoOverlay>()
                 .unwrap()
@@ -48,21 +54,38 @@ impl BackendGStreamerOpenGL {
                     None => return,
                 };
 
-                let gdk_window = video_window.get_window().unwrap();
+                let gdk_window = video_window.get_toplevel().unwrap().get_window().unwrap();
 
                 if !gdk_window.ensure_native() {
                     warning!("Can't create native window for widget");
                 }
 
-                let res = set_window_handle(&video_overlay, &gdk_window);
-                println!("{:#?}", res);
+                if let Err(e) = set_window_handle(&video_overlay, &gdk_window) {
+                    warning!("{}", e)
+                }
             });
 
-        Ok(Self {
-            playbin,
+        let inner = Self {
+            playbin: Rc::new(playbin),
             state: Rc::new(RefCell::new(GtPlayerState::Stopped)),
+            cb: Rc::new(cb),
             widget
-        })
+        };
+
+        let bus = p!(inner.playbin.get_bus().ok_or("Could not get playbin bus"));
+        p!(bus.add_watch_local(glib::clone!(
+            @strong inner.playbin as playbin,
+            @strong inner.state as state,
+            @strong inner.cb as cb
+        => move |_, msg| {
+
+            super::bus_event_handler(msg, &*playbin, &*state, &*cb);
+
+            glib::Continue(true)
+
+        })));
+
+        Ok(inner)
 
     }
 
@@ -88,6 +111,9 @@ impl GtPlayerBackend for BackendGStreamerOpenGL {
 
     fn stop(&self) -> GtResult<()> {
         p!(self.playbin.set_state(GstState::Null));
+        // Emit event here since playbin does not emit anything when set to null
+        self.state.replace(GtPlayerState::Stopped);
+        (self.cb)(GtPlayerEvent::StateChange(self.state.borrow().clone()));
         Ok(())
     }
 

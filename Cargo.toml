@@ -7,7 +7,7 @@ description = "Watch your favorite Twitch streamers in an GTK app!"
 homepage = "https://github.com/olback/gnome-twitch-2"
 
 [features]
-default = [ "backend-gstreamer" ]
+default = [ "backend-gstreamer", "backend-gstreamer-opengl" ]
 backend-gstreamer = [ "gst" ]
 backend-gstreamer-opengl = [ "gst", "gstv" ]
 
@@ -21,11 +21,13 @@ gdk = "0.13"
 gdk-pixbuf = "0.9"
 glib = "0.10"
 webkit2gtk = "0.10" # Only used to authenticate, may be replaced by a user redirect.
+# Player Backend
 gst = { package = "gstreamer", version = "0.16", optional = true }
 gstv = { package = "gstreamer-video", version = "0.16", optional = true }
 # Data
 serde = { version = "1.0", features = [ "derive" ] }
 url = "2"
+m3u8-rs = "1.0"
 lazy_static = "1.4"
 # Asset Cache
 dirs = "3.0"
@@ -34,8 +36,8 @@ rusqlite = { version = "0.24", features = [ "bundled" ] }
 # I/O
 tokio = { version = "0.2", features = [ "full" ] }
 reqwest = { version = "0.10", features = [ "json" ] }
-#tokio-tungstenite = "0.11"
-keyring = "0.9"
+# twitchchat = { git = "", features = [ "async", "tokio", "tokio-utils", "tokio-native-tls", "native-tls" ] }
+keyring = "0.10"
 
 [build-dependencies]
 last-git-commit = "0.2"

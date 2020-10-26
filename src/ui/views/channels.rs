@@ -7,23 +7,27 @@ use {
     super::super::cards::LiveCard,
     std::{rc::Rc, cell::RefCell},
     gtk::{Builder, FlowBox, ScrolledWindow, prelude::*},
-    glib::clone
+    glib::{clone, Sender}
 };
+
+// TODO: Handle errors
 
 pub struct ChannelsView {
     flow: Rc<FlowBox>,
     scroll: ScrolledWindow,
-    pagination: Rc<RefCell<Option<String>>>
+    pagination: Rc<RefCell<Option<String>>>,
+    tx: Sender<(String, String)>
 }
 
 impl ChannelsView {
 
-    pub fn configure(builder: &Builder) -> Rc<Self> {
+    pub fn configure(builder: &Builder, tx: Sender<(String, String)>) -> Rc<Self> {
 
         let inner = Rc::new(Self {
             flow: Rc::new(get_obj!(builder, "channels-flowbox")),
             scroll: get_obj!(builder, "channels-scroll-window"),
-            pagination: Rc::new(RefCell::new(None))
+            pagination: Rc::new(RefCell::new(None)),
+            tx
         });
 
         inner.scroll.connect_edge_reached(clone!(@strong inner => move |_, pos| {
@@ -44,6 +48,7 @@ impl ChannelsView {
             let flow = Rc::clone(&self.flow);
             let pagination = Rc::clone(&self.pagination);
             let pagi_str = self.pagination.borrow().clone();
+            let tx = self.tx.clone();
 
             rt::run_cb_local(
                 async move {
@@ -61,8 +66,9 @@ impl ChannelsView {
                             for stream in tw_response.data {
                                 let card = LiveCard::new(
                                     TwitchUtils::thumbnail_sizer(&stream.thumbnail_url, STREAM_COVER_SIZE.0, STREAM_COVER_SIZE.1),
-                                    &stream.title,
-                                    &stream.user_name
+                                    stream.title,
+                                    stream.user_name,
+                                    tx.clone()
                                 );
                                 flow.insert(card.get_widget(), -1);
                             }

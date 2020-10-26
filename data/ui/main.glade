@@ -288,139 +288,190 @@ Author: Edwin Svensson
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkOverlay">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkStack" id="views-stack">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="transition-duration">100</property>
-                    <property name="transition-type">crossfade</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkScrolledWindow" id="channels-scroll-window">
+                      <object class="GtkStack" id="views-stack">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="hexpand">True</property>
-                        <property name="vexpand">True</property>
-                        <property name="shadow-type">in</property>
+                        <property name="can-focus">False</property>
+                        <property name="transition-duration">100</property>
+                        <property name="transition-type">crossfade</property>
                         <child>
-                          <object class="GtkViewport">
+                          <object class="GtkScrolledWindow" id="channels-scroll-window">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
+                            <property name="can-focus">True</property>
                             <property name="hexpand">True</property>
                             <property name="vexpand">True</property>
+                            <property name="shadow-type">in</property>
                             <child>
-                              <object class="GtkFlowBox" id="channels-flowbox">
+                              <object class="GtkViewport">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="hexpand">True</property>
                                 <property name="vexpand">True</property>
-                                <property name="border-width">18</property>
-                                <property name="homogeneous">True</property>
-                                <property name="column-spacing">6</property>
-                                <property name="row-spacing">6</property>
-                                <property name="min-children-per-line">1</property>
-                                <property name="max-children-per-line">100</property>
-                                <property name="selection-mode">none</property>
+                                <child>
+                                  <object class="GtkFlowBox" id="channels-flowbox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="vexpand">True</property>
+                                    <property name="border-width">18</property>
+                                    <property name="homogeneous">True</property>
+                                    <property name="column-spacing">6</property>
+                                    <property name="row-spacing">6</property>
+                                    <property name="min-children-per-line">1</property>
+                                    <property name="max-children-per-line">100</property>
+                                    <property name="selection-mode">none</property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                           </object>
+                          <packing>
+                            <property name="name">channels</property>
+                            <property name="title" translatable="yes">Channels</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="following-scroll-window">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
+                            <child>
+                              <object class="GtkViewport">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkFlowBox" id="following-flowbox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="vexpand">True</property>
+                                    <property name="border-width">18</property>
+                                    <property name="homogeneous">True</property>
+                                    <property name="column-spacing">6</property>
+                                    <property name="row-spacing">6</property>
+                                    <property name="min-children-per-line">1</property>
+                                    <property name="max-children-per-line">100</property>
+                                    <property name="selection-mode">none</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="name">following</property>
+                            <property name="title" translatable="yes">Following</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="games-scroll-window">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="shadow-type">in</property>
+                            <child>
+                              <object class="GtkViewport">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <object class="GtkFlowBox" id="games-flowbox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="vexpand">True</property>
+                                    <property name="border-width">18</property>
+                                    <property name="homogeneous">True</property>
+                                    <property name="column-spacing">6</property>
+                                    <property name="row-spacing">6</property>
+                                    <property name="min-children-per-line">1</property>
+                                    <property name="max-children-per-line">100</property>
+                                    <property name="selection-mode">none</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="name">games</property>
+                            <property name="title" translatable="yes">Games</property>
+                            <property name="position">2</property>
+                          </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="name">channels</property>
-                        <property name="title" translatable="yes">Channels</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScrolledWindow" id="following-scroll-window">
+                      <object class="GtkStackSwitcher">
+                        <property name="height-request">42</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="shadow-type">in</property>
-                        <child>
-                          <object class="GtkViewport">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkFlowBox" id="following-flowbox">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="hexpand">True</property>
-                                <property name="vexpand">True</property>
-                                <property name="border-width">18</property>
-                                <property name="homogeneous">True</property>
-                                <property name="column-spacing">6</property>
-                                <property name="row-spacing">6</property>
-                                <property name="min-children-per-line">1</property>
-                                <property name="max-children-per-line">100</property>
-                                <property name="selection-mode">none</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
+                        <property name="can-focus">False</property>
+                        <property name="homogeneous">True</property>
+                        <property name="stack">views-stack</property>
                       </object>
                       <packing>
-                        <property name="name">following</property>
-                        <property name="title" translatable="yes">Following</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
-                    <child>
-                      <object class="GtkScrolledWindow" id="games-scroll-window">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="shadow-type">in</property>
-                        <child>
-                          <object class="GtkViewport">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkFlowBox" id="games-flowbox">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="hexpand">True</property>
-                                <property name="vexpand">True</property>
-                                <property name="border-width">18</property>
-                                <property name="homogeneous">True</property>
-                                <property name="column-spacing">6</property>
-                                <property name="row-spacing">6</property>
-                                <property name="min-children-per-line">1</property>
-                                <property name="max-children-per-line">100</property>
-                                <property name="selection-mode">none</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="name">games</property>
-                        <property name="title" translatable="yes">Games</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="index">-1</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkStackSwitcher">
-                    <property name="height-request">42</property>
-                    <property name="visible">True</property>
+                <child type="overlay">
+                  <object class="GtkRevealer" id="views-spinner-overlay">
                     <property name="can-focus">False</property>
-                    <property name="homogeneous">True</property>
-                    <property name="stack">views-stack</property>
+                    <property name="no-show-all">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="transition-type">none</property>
+                    <property name="transition-duration">0</property>
+                    <property name="reveal-child">True</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkSpinner">
+                            <property name="width-request">100</property>
+                            <property name="height-request">100</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="hexpand">True</property>
+                            <property name="vexpand">True</property>
+                            <property name="active">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="views-spinner-overlay"/>
+                    </style>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="pass-through">True</property>
                   </packing>
                 </child>
               </object>
@@ -564,7 +615,7 @@ Author: Edwin Svensson
                                                           <object class="GtkLabel" id="player-viewers">
                                                             <property name="visible">True</property>
                                                             <property name="can-focus">False</property>
-                                                            <property name="label" translatable="yes">360</property>
+                                                            <property name="label" translatable="yes">0</property>
                                                           </object>
                                                           <packing>
                                                             <property name="expand">False</property>
@@ -1009,16 +1060,6 @@ audio-volume-medium-symbolic</property>
           </object>
           <packing>
             <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkStackSwitcher">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="stack">main-stack</property>
-          </object>
-          <packing>
-            <property name="position">2</property>
           </packing>
         </child>
       </object>

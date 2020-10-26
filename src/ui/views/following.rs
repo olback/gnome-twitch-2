@@ -5,23 +5,27 @@ use {
         twitch::{Twitch, TwitchUtils, TwResult, response::Stream}
     },
     super::super::cards::LiveCard,
-    std::{rc::Rc, cell::RefCell},
+    std::rc::Rc,
     gtk::{Builder, FlowBox, ScrolledWindow, prelude::*},
-    glib::clone
+    glib::{clone, Sender}
 };
+
+// TODO: Handle errors
 
 pub struct FollowingView {
     flow: Rc<FlowBox>,
-    scroll: ScrolledWindow
+    scroll: ScrolledWindow,
+    tx: Sender<(String, String)>
 }
 
 impl FollowingView {
 
-    pub fn configure(builder: &Builder) -> Rc<Self> {
+    pub fn configure(builder: &Builder, tx: Sender<(String, String)>) -> Rc<Self> {
 
         let inner = Rc::new(Self {
             flow: Rc::new(get_obj!(builder, "following-flowbox")),
-            scroll: get_obj!(builder, "following-scroll-window")
+            scroll: get_obj!(builder, "following-scroll-window"),
+            tx
         });
 
         inner.flow.connect_child_activated(|_, child| {
@@ -47,6 +51,7 @@ impl FollowingView {
             let user_id = user.user_id.clone();
             let token = user.oauth_token.clone();
             let flow = Rc::clone(&self.flow);
+            let tx = self.tx.clone();
 
             rt::run_cb_local(async move {
 
@@ -99,8 +104,9 @@ impl FollowingView {
                     Ok(streams) => for stream in streams {
                         let lc = LiveCard::new(
                             TwitchUtils::thumbnail_sizer(&stream.thumbnail_url, STREAM_COVER_SIZE.0, STREAM_COVER_SIZE.1),
-                            &stream.title,
-                            &stream.user_name
+                            stream.title,
+                            stream.user_name,
+                            tx.clone()
                         );
                         flow.insert(lc.get_widget(), -1);
                     },

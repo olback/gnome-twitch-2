@@ -32,7 +32,6 @@ impl SettingsWindow {
 
         settings.bind("theme", &get_obj!(ComboBoxText, builder, "settings-theme"), "active-id", SettingsBindFlags::DEFAULT);
         settings.bind("default-view", &get_obj!(ComboBoxText, builder, "settings-default-view"), "active-id", SettingsBindFlags::DEFAULT);
-        settings.bind("default-quality", &get_obj!(ComboBoxText, builder, "settings-default-quality"), "active-id", SettingsBindFlags::DEFAULT);
         settings.bind("backend-player", &backend_player_cbt, "active-id", SettingsBindFlags::DEFAULT);
 
         let info_bar = get_obj!(InfoBar, builder, "settings-info-bar");

@@ -2,7 +2,7 @@ use {
     std::rc::Rc,
     crate::{ASSETS, rt, resource, resources::{STREAM_COVER_SIZE, bytes_to_pixbuf}},
     gtk::{FlowBoxChild, Box as GtkBox, EventBox, Image, Label, prelude::*},
-    glib::clone
+    glib::{clone, Sender}
 };
 
 pub struct LiveCard {
@@ -11,7 +11,7 @@ pub struct LiveCard {
 
 impl LiveCard {
 
-    pub fn new(img_url: String, title: &str, streamer: &str) -> Self {
+    pub fn new(img_url: String, title: String, streamer: String, tx: Sender<(String, String)>) -> Self {
 
         let fbc = FlowBoxChild::new();
         fbc.set_halign(gtk::Align::Center);
@@ -24,9 +24,9 @@ impl LiveCard {
         let image = Rc::new(Image::new());
         image.set_size_request(STREAM_COVER_SIZE.0, STREAM_COVER_SIZE.1);
         image.set_from_resource(Some(resource!("images/thumbnail-404")));
-        image.set_tooltip_text(Some(title));
+        image.set_tooltip_text(Some(&title));
 
-        let bottom_label = Label::new(Some(streamer));
+        let bottom_label = Label::new(Some(&streamer));
 
         rt::run_cb_local(async move {
             ASSETS.load(&img_url).await
@@ -44,9 +44,9 @@ impl LiveCard {
         fbc.add(&evbox);
         fbc.show_all();
 
-        evbox.connect_button_press_event(|evbox, evbutton| {
+        evbox.connect_button_press_event(move |_, evbutton| {
             if evbutton.get_button() == 1 {
-                println!("Stream clicked");
+                tx.send((title.clone(), streamer.clone())).expect("Failed to send stream info");
             }
             gtk::Inhibit(false)
         });

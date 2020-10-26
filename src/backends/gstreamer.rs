@@ -9,7 +9,6 @@ use {
     gtk::{Widget, prelude::*},
     gio::{Settings, SettingsExt, SettingsBindFlags},
     gst::{
-        MessageView as GstMessageView,
         State as GstState,
         Element as GstElement,
         ElementFactory as GstElementFactory,
@@ -59,67 +58,7 @@ impl BackendGStreamer {
             @strong inner.cb as cb
         => move |_, msg| {
 
-            let evt = match msg.view() {
-
-                GstMessageView::Buffering(buffering) => {
-                    state.replace(GtPlayerState::Buffering);
-                    let perc = buffering.get_percent();
-                    drop(playbin.set_state(if perc < 100 {
-                        GstState::Paused
-                    } else {
-                        GstState::Playing
-                    }));
-                    Some(GtPlayerEvent::StateChange(GtPlayerState::Buffering))
-                },
-
-                GstMessageView::Eos(_) => {
-                    state.replace(GtPlayerState::Eos);
-                    drop(playbin.set_state(GstState::Null));
-                    Some(GtPlayerEvent::StateChange(GtPlayerState::Eos))
-                },
-
-                GstMessageView::StateChanged(state_change) => {
-                    let old_state = state_change.get_old();
-                    let new_state = state_change.get_current();
-                    if let Some(src) = msg.get_src() {
-                        if src == *playbin && old_state != new_state {
-                            match new_state {
-                                GstState::Paused => {
-                                    state.replace(GtPlayerState::Paused);
-                                    Some(GtPlayerEvent::StateChange(GtPlayerState::Paused))
-                                },
-                                GstState::Ready | GstState::Null => {
-                                    state.replace(GtPlayerState::Stopped);
-                                    Some(GtPlayerEvent::StateChange(GtPlayerState::Stopped))
-                                },
-                                GstState::Playing => {
-                                    state.replace(GtPlayerState::Playing);
-                                    Some(GtPlayerEvent::StateChange(GtPlayerState::Playing))
-                                },
-                                _ => None
-                            }
-                        } else { None }
-                    } else { None }
-                },
-
-                GstMessageView::Warning(warning) => {
-                    Some(GtPlayerEvent::Warning(format!("{}", warning.get_error())))
-                },
-
-                GstMessageView::Error(error) => {
-                    Some(GtPlayerEvent::Error(format!("{}", error.get_error())))
-                }
-
-                _ => None
-
-            };
-
-            if let Some(e) = evt {
-                // if let Some(ptr) = *cb {
-                //     ptr(e)
-                // }
-                cb(e)
-            }
+            super::bus_event_handler(msg, &*playbin, &*state, &*cb);
 
             glib::Continue(true)
 

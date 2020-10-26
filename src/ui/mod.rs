@@ -1,8 +1,11 @@
 use {
-    crate::{USER, get_obj, resource, warning, resources::APP_ID},
+    crate::{
+        USER, p, rt, get_obj, resource, warning, new_err,
+        resources::APP_ID, twitch::TwitchExtras, error::GtResult
+    },
     std::{rc::Rc, cell::RefCell},
     gtk::{
-        Application, ApplicationInhibitFlags, ApplicationWindow, Label, InfoBar,
+        Application, ApplicationInhibitFlags, ApplicationWindow, Label, InfoBar, Revealer,
         StackTransitionType, SettingsExt as GtkSettingsExt, Button, Stack, prelude::*
     },
     gio::{SimpleAction, SimpleActionGroup, Settings, SettingsExt, prelude::*},
@@ -33,7 +36,8 @@ pub struct Ui {
     pub views_section: Rc<views::ViewsSection>,
     pub chat_section: Rc<chat::ChatSection>,
     pub player_section: Rc<player::PlayerSection>,
-    main_stack: Stack
+    main_stack: Stack,
+    views_spinner_overlay: Revealer
 }
 
 impl Ui {
@@ -64,25 +68,83 @@ impl Ui {
             }
         });
 
+        // Start stream channel
+        let (tx, rx) = glib::MainContext::channel::<(String, String)>(glib::Priority::default());
+
         let inner = Rc::new(Self {
             search_section: search::SearchSection::configure(&builder),
             auth_window: auth::AuthWindow::configure(app, &main_window),
             about_dialog: about::AboutDialog::configure(&main_window),
             settings_window: settings::SettingsWindow::configure(&main_window, &settings),
             profile_window: profile::ProfileWindow::configure(&main_window, &app_action_group),
-            views_section: views::ViewsSection::configure(&builder, &settings),
+            views_section: views::ViewsSection::configure(&builder, &settings, tx),
             chat_section: chat::ChatSection::configure(&builder),
             // Make sure to configure SettingsWindow before PlayerSection!
             player_section: player::PlayerSection::configure(app, &builder, &settings),
             main_window,
-            main_stack: get_obj!(builder, "main-stack")
+            main_stack: get_obj!(builder, "main-stack"),
+            views_spinner_overlay: get_obj!(builder, "views-spinner-overlay")
         });
 
+        rx.attach(None, clone!(
+            @strong inner
+        => move |(title, user_name)| {
+
+            inner.views_spinner_overlay.set_visible(true);
+
+            let logged_in_user = (*USER.lock().unwrap()).clone().unwrap();
+            let a_user_name = user_name.clone();
+
+            rt::run_cb_local(async move {
+
+                let access_token = p!(TwitchExtras::access_token(&a_user_name, Some(logged_in_user.oauth_token)).await);
+                let usher = p!(TwitchExtras::usher(&a_user_name, access_token.sig, access_token.token).await) + "\n";
+
+                let parsed = m3u8_rs::parse_playlist_res(usher.as_bytes());
+                match parsed {
+                    Ok(m3u8_rs::playlist::Playlist::MasterPlaylist(mp)) => {
+                        let mut qualities = Vec::with_capacity(mp.variants.len());
+                        for mut variant in mp.variants {
+                            println!("{}: {}", variant.alternatives[0].name, variant.uri);
+                            qualities.push((variant.alternatives.remove(0).name, variant.uri));
+                        }
+                        Ok(qualities)
+                    },
+                    _ => Err(new_err!("Failed to parse playlist"))
+                }
+
+            }, clone!(@strong inner => move |res: GtResult<Vec<(String, String)>>| {
+
+                inner.views_spinner_overlay.set_visible(false);
+                match res {
+                    Ok(qualities) => {
+                        // TODO:
+                        // inner.chat_section.connect(&user_name);
+                        // TODO: Update viewer count and title periodically
+                        // TODO: Play default quality
+                        inner.player_section.play(qualities[0].1.clone());
+                        inner.player_section.set_title(&title);
+                        inner.player_section.set_streamer(&user_name);
+                        inner.player_section.set_qualities(qualities);
+                        inner.show_player();
+                    },
+                    Err(e) => show_info_bar("Error", &e.to_string(), gtk::MessageType::Error)
+                }
+
+            }));
+
+
+            glib::Continue(true)
+
+        }));
+
         INFO_BAR.with(|ib| {
+            let infobar = get_obj!(InfoBar, builder, "main-info");
+            infobar.connect_response(|ib, _| { ib.set_revealed(false); ib.set_visible(false); });
             ib.borrow_mut().replace((
                 get_obj!(Label, builder, "main-info-title"),
                 get_obj!(Label, builder, "main-info-body"),
-                get_obj!(InfoBar, builder, "main-info")
+                infobar
             ));
         });
 
