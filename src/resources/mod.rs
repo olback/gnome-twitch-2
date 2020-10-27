@@ -54,8 +54,19 @@ pub fn bytes_to_pixbuf(data: &[u8], size: Option<(i32, i32)>) -> GtResult<gdk_pi
     if let Some(size) = size {
         pixbufloader.set_size(size.0, size.1);
     }
-    p!(pixbufloader.write(&data));
-    let pixbuf = p!(pixbufloader.get_pixbuf().ok_or("Could not get pixbuf"));
+    if let Err(e) = pixbufloader.write(&data) {
+        p!(pixbufloader.close());
+        return p!(Err(e))
+    }
+
+    let pixbuf = match pixbufloader.get_pixbuf() {
+        Some(pixbuf) => pixbuf,
+        None => {
+            p!(pixbufloader.close());
+            return p!(Err("Failed to get pixbuf"))
+        }
+    };
+
     drop(pixbufloader.close());
 
     Ok(pixbuf)

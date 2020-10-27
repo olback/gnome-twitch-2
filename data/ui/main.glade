@@ -141,6 +141,8 @@ Author: Edwin Svensson
     <property name="icon-name">edit-find-symbolic</property>
   </object>
   <object class="GtkApplicationWindow" id="main-window">
+    <property name="width-request">1200</property>
+    <property name="height-request">700</property>
     <property name="can-focus">False</property>
     <property name="icon-name">input-gaming</property>
     <child>
@@ -487,385 +489,369 @@ Author: Edwin Svensson
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="width-request">960</property>
-                    <property name="height-request">540</property>
+                  <object class="GtkBox">
+                    <property name="width-request">800</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
+                    <property name="can-focus">False</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="shadow-type">in</property>
-                    <property name="propagate-natural-width">True</property>
-                    <property name="propagate-natural-height">True</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkViewport">
+                      <object class="GtkOverlay">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
                         <child>
-                          <object class="GtkBox">
+                          <object class="GtkBox" id="player-container">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="hexpand">True</property>
                             <property name="vexpand">True</property>
                             <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkOverlay">
+                              <placeholder/>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="index">-1</property>
+                          </packing>
+                        </child>
+                        <child type="overlay">
+                          <object class="GtkEventBox" id="player-controls-trigger">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="hexpand">True</property>
+                            <property name="vexpand">True</property>
+                            <property name="visible-window">False</property>
+                            <child>
+                              <object class="GtkBox">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="hexpand">True</property>
                                 <property name="vexpand">True</property>
+                                <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkBox" id="player-container">
+                                  <object class="GtkRevealer" id="player-top-revealer">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="hexpand">True</property>
+                                    <property name="valign">start</property>
                                     <property name="vexpand">True</property>
-                                    <property name="orientation">vertical</property>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="index">-1</property>
-                                  </packing>
-                                </child>
-                                <child type="overlay">
-                                  <object class="GtkEventBox" id="player-controls-trigger">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="visible-window">False</property>
+                                    <property name="transition-duration">200</property>
+                                    <property name="reveal-child">True</property>
                                     <child>
                                       <object class="GtkBox">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
+                                        <property name="valign">start</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="vexpand">False</property>
                                         <property name="orientation">vertical</property>
                                         <child>
-                                          <object class="GtkRevealer" id="player-top-revealer">
-                                            <property name="visible">True</property>
-                                            <property name="can-focus">False</property>
-                                            <property name="valign">start</property>
-                                            <property name="vexpand">True</property>
-                                            <property name="transition-duration">200</property>
-                                            <property name="reveal-child">True</property>
-                                            <child>
-                                              <object class="GtkBox">
-                                                <property name="visible">True</property>
-                                                <property name="can-focus">False</property>
-                                                <property name="valign">start</property>
-                                                <property name="hexpand">True</property>
-                                                <property name="vexpand">False</property>
-                                                <property name="orientation">vertical</property>
-                                                <child>
-                                                  <object class="GtkBox">
-                                                    <property name="visible">True</property>
-                                                    <property name="can-focus">False</property>
-                                                    <property name="valign">end</property>
-                                                    <property name="hexpand">True</property>
-                                                    <property name="border-width">12</property>
-                                                    <property name="orientation">vertical</property>
-                                                    <property name="spacing">6</property>
-                                                    <child>
-                                                      <object class="GtkLabel" id="player-title">
-                                                        <property name="visible">True</property>
-                                                        <property name="can-focus">False</property>
-                                                        <property name="halign">start</property>
-                                                        <property name="label" translatable="yes">Non Stop Music - Monstercat Radio 🎶</property>
-                                                        <attributes>
-                                                          <attribute name="scale" value="2"/>
-                                                        </attributes>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">False</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="position">0</property>
-                                                      </packing>
-                                                    </child>
-                                                    <child>
-                                                      <object class="GtkLabel" id="player-streamer">
-                                                        <property name="visible">True</property>
-                                                        <property name="can-focus">False</property>
-                                                        <property name="halign">start</property>
-                                                        <property name="label" translatable="yes">Monstercat</property>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">False</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="position">1</property>
-                                                      </packing>
-                                                    </child>
-                                                    <child>
-                                                      <object class="GtkBox">
-                                                        <property name="visible">True</property>
-                                                        <property name="can-focus">False</property>
-                                                        <property name="spacing">6</property>
-                                                        <child>
-                                                          <object class="GtkImage">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">False</property>
-                                                            <property name="icon-name">face-smile</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkLabel" id="player-viewers">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">False</property>
-                                                            <property name="label" translatable="yes">0</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                          </packing>
-                                                        </child>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">False</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="position">2</property>
-                                                      </packing>
-                                                    </child>
-                                                  </object>
-                                                  <packing>
-                                                    <property name="expand">True</property>
-                                                    <property name="fill">True</property>
-                                                    <property name="position">3</property>
-                                                  </packing>
-                                                </child>
-                                                <style>
-                                                  <class name="media-controls-overlay"/>
-                                                </style>
-                                              </object>
-                                            </child>
-                                          </object>
-                                          <packing>
-                                            <property name="expand">False</property>
-                                            <property name="fill">True</property>
-                                            <property name="position">0</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <placeholder/>
-                                        </child>
-                                        <child>
-                                          <object class="GtkRevealer" id="player-bottom-revealer">
+                                          <object class="GtkBox">
                                             <property name="visible">True</property>
                                             <property name="can-focus">False</property>
                                             <property name="valign">end</property>
-                                            <property name="vexpand">True</property>
-                                            <property name="transition-type">slide-up</property>
-                                            <property name="transition-duration">200</property>
-                                            <property name="reveal-child">True</property>
+                                            <property name="hexpand">True</property>
+                                            <property name="border-width">12</property>
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">6</property>
+                                            <child>
+                                              <object class="GtkLabel" id="player-title">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">start</property>
+                                                <property name="label" translatable="yes">Non Stop Music - Monstercat Radio 🎶</property>
+                                                <attributes>
+                                                  <attribute name="scale" value="2"/>
+                                                </attributes>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkLabel" id="player-streamer">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">start</property>
+                                                <property name="label" translatable="yes">Monstercat</property>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">1</property>
+                                              </packing>
+                                            </child>
                                             <child>
                                               <object class="GtkBox">
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
-                                                <property name="hexpand">True</property>
-                                                <property name="vexpand">False</property>
-                                                <property name="orientation">vertical</property>
+                                                <property name="spacing">6</property>
                                                 <child>
-                                                  <object class="GtkBox">
+                                                  <object class="GtkImage">
                                                     <property name="visible">True</property>
                                                     <property name="can-focus">False</property>
-                                                    <property name="valign">end</property>
-                                                    <property name="hexpand">True</property>
-                                                    <property name="border-width">12</property>
-                                                    <property name="spacing">6</property>
-                                                    <child>
-                                                      <object class="GtkBox">
-                                                        <property name="visible">True</property>
-                                                        <property name="can-focus">False</property>
-                                                        <property name="halign">start</property>
-                                                        <property name="hexpand">True</property>
-                                                        <property name="spacing">6</property>
-                                                        <child>
-                                                          <object class="GtkButton" id="player-play-pause">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">True</property>
-                                                            <property name="receives-default">True</property>
-                                                            <property name="image">play-image</property>
-                                                            <property name="relief">none</property>
-                                                            <property name="always-show-image">True</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkVolumeButton" id="player-volume">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">True</property>
-                                                            <property name="focus-on-click">False</property>
-                                                            <property name="receives-default">True</property>
-                                                            <property name="relief">none</property>
-                                                            <property name="orientation">vertical</property>
-                                                            <property name="size">button</property>
-                                                            <property name="icons">audio-volume-muted-symbolic
-audio-volume-high-symbolic
-audio-volume-low-symbolic
-audio-volume-medium-symbolic</property>
-                                                            <child internal-child="plus_button">
-                                                            <object class="GtkButton">
-                                                            <property name="can-focus">False</property>
-                                                            <property name="receives-default">False</property>
-                                                            </object>
-                                                            </child>
-                                                            <child internal-child="minus_button">
-                                                            <object class="GtkButton">
-                                                            <property name="can-focus">False</property>
-                                                            <property name="receives-default">False</property>
-                                                            </object>
-                                                            </child>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                          </packing>
-                                                        </child>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">False</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="position">0</property>
-                                                      </packing>
-                                                    </child>
-                                                    <child>
-                                                      <object class="GtkBox">
-                                                        <property name="visible">True</property>
-                                                        <property name="can-focus">False</property>
-                                                        <property name="halign">end</property>
-                                                        <property name="hexpand">True</property>
-                                                        <property name="spacing">6</property>
-                                                        <child>
-                                                          <object class="GtkSpinner" id="player-buffering">
-                                                            <property name="can-focus">False</property>
-                                                            <property name="active">True</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkButton" id="player-clip">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">True</property>
-                                                            <property name="receives-default">True</property>
-                                                            <property name="image">clip-image</property>
-                                                            <property name="relief">none</property>
-                                                            <property name="always-show-image">True</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkMenuButton" id="player-menu-button">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">True</property>
-                                                            <property name="focus-on-click">False</property>
-                                                            <property name="receives-default">True</property>
-                                                            <property name="relief">none</property>
-                                                            <property name="direction">up</property>
-                                                            <child>
-                                                            <object class="GtkImage">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">False</property>
-                                                            <property name="icon-name">preferences-system-symbolic</property>
-                                                            </object>
-                                                            </child>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">2</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkToggleButton" id="player-toggle-chat">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">True</property>
-                                                            <property name="receives-default">True</property>
-                                                            <property name="image">no-chat-image</property>
-                                                            <property name="relief">none</property>
-                                                            <property name="always-show-image">True</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">3</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkButton" id="player-fullscreen">
-                                                            <property name="visible">True</property>
-                                                            <property name="can-focus">True</property>
-                                                            <property name="receives-default">True</property>
-                                                            <property name="image">fullscreen-image</property>
-                                                            <property name="relief">none</property>
-                                                            <property name="always-show-image">True</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">4</property>
-                                                          </packing>
-                                                        </child>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">False</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="position">2</property>
-                                                      </packing>
-                                                    </child>
+                                                    <property name="icon-name">face-smile</property>
                                                   </object>
                                                   <packing>
-                                                    <property name="expand">True</property>
+                                                    <property name="expand">False</property>
                                                     <property name="fill">True</property>
-                                                    <property name="position">3</property>
+                                                    <property name="position">0</property>
                                                   </packing>
                                                 </child>
-                                                <style>
-                                                  <class name="media-controls-overlay"/>
-                                                </style>
+                                                <child>
+                                                  <object class="GtkLabel" id="player-viewers">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">False</property>
+                                                    <property name="label" translatable="yes">0</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">1</property>
+                                                  </packing>
+                                                </child>
                                               </object>
+                                              <packing>
+                                                <property name="expand">False</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">2</property>
+                                              </packing>
                                             </child>
                                           </object>
                                           <packing>
-                                            <property name="expand">False</property>
+                                            <property name="expand">True</property>
                                             <property name="fill">True</property>
-                                            <property name="position">2</property>
+                                            <property name="position">3</property>
                                           </packing>
                                         </child>
+                                        <style>
+                                          <class name="media-controls-overlay"/>
+                                        </style>
                                       </object>
                                     </child>
                                   </object>
                                   <packing>
-                                    <property name="index">2</property>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <object class="GtkRevealer" id="player-bottom-revealer">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="valign">end</property>
+                                    <property name="vexpand">True</property>
+                                    <property name="transition-type">slide-up</property>
+                                    <property name="transition-duration">200</property>
+                                    <property name="reveal-child">True</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="hexpand">True</property>
+                                        <property name="vexpand">False</property>
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="visible">True</property>
+                                            <property name="can-focus">False</property>
+                                            <property name="valign">end</property>
+                                            <property name="hexpand">True</property>
+                                            <property name="border-width">12</property>
+                                            <property name="spacing">6</property>
+                                            <child>
+                                              <object class="GtkBox">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">start</property>
+                                                <property name="hexpand">True</property>
+                                                <property name="spacing">6</property>
+                                                <child>
+                                                  <object class="GtkButton" id="player-play-pause">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="receives-default">True</property>
+                                                    <property name="image">play-image</property>
+                                                    <property name="relief">none</property>
+                                                    <property name="always-show-image">True</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">0</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkVolumeButton" id="player-volume">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="focus-on-click">False</property>
+                                                    <property name="receives-default">True</property>
+                                                    <property name="relief">none</property>
+                                                    <property name="orientation">vertical</property>
+                                                    <property name="size">button</property>
+                                                    <property name="icons">audio-volume-muted-symbolic
+audio-volume-high-symbolic
+audio-volume-low-symbolic
+audio-volume-medium-symbolic</property>
+                                                    <child internal-child="plus_button">
+                                                      <object class="GtkButton">
+                                                        <property name="can-focus">False</property>
+                                                        <property name="receives-default">False</property>
+                                                      </object>
+                                                    </child>
+                                                    <child internal-child="minus_button">
+                                                      <object class="GtkButton">
+                                                        <property name="can-focus">False</property>
+                                                        <property name="receives-default">False</property>
+                                                      </object>
+                                                    </child>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">1</property>
+                                                  </packing>
+                                                </child>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">True</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">0</property>
+                                              </packing>
+                                            </child>
+                                            <child>
+                                              <object class="GtkBox">
+                                                <property name="visible">True</property>
+                                                <property name="can-focus">False</property>
+                                                <property name="halign">end</property>
+                                                <property name="hexpand">True</property>
+                                                <property name="spacing">6</property>
+                                                <child>
+                                                  <object class="GtkSpinner" id="player-buffering">
+                                                    <property name="can-focus">False</property>
+                                                    <property name="active">True</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">0</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkButton" id="player-clip">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="receives-default">True</property>
+                                                    <property name="image">clip-image</property>
+                                                    <property name="relief">none</property>
+                                                    <property name="always-show-image">True</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">1</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkMenuButton" id="player-menu-button">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="focus-on-click">False</property>
+                                                    <property name="receives-default">True</property>
+                                                    <property name="relief">none</property>
+                                                    <property name="direction">up</property>
+                                                    <child>
+                                                      <object class="GtkImage">
+                                                        <property name="visible">True</property>
+                                                        <property name="can-focus">False</property>
+                                                        <property name="icon-name">preferences-system-symbolic</property>
+                                                      </object>
+                                                    </child>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">2</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkToggleButton" id="player-toggle-chat">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="receives-default">True</property>
+                                                    <property name="image">no-chat-image</property>
+                                                    <property name="relief">none</property>
+                                                    <property name="always-show-image">True</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">3</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkButton" id="player-fullscreen">
+                                                    <property name="visible">True</property>
+                                                    <property name="can-focus">True</property>
+                                                    <property name="receives-default">True</property>
+                                                    <property name="image">fullscreen-image</property>
+                                                    <property name="relief">none</property>
+                                                    <property name="always-show-image">True</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">False</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">4</property>
+                                                  </packing>
+                                                </child>
+                                              </object>
+                                              <packing>
+                                                <property name="expand">True</property>
+                                                <property name="fill">True</property>
+                                                <property name="position">2</property>
+                                              </packing>
+                                            </child>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">True</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">3</property>
+                                          </packing>
+                                        </child>
+                                        <style>
+                                          <class name="media-controls-overlay"/>
+                                        </style>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">2</property>
                                   </packing>
                                 </child>
                               </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
                             </child>
                           </object>
+                          <packing>
+                            <property name="index">2</property>
+                          </packing>
                         </child>
                       </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -875,7 +861,7 @@ audio-volume-medium-symbolic</property>
                 </child>
                 <child>
                   <object class="GtkBox" id="chat-section">
-                    <property name="width-request">350</property>
+                    <property name="width-request">300</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
