@@ -175,7 +175,7 @@ Author: Edwin Svensson
             <child internal-child="content_area">
               <object class="GtkBox">
                 <property name="can-focus">False</property>
-                <property name="spacing">16</property>
+                <property name="spacing">6</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
@@ -615,7 +615,7 @@ Author: Edwin Svensson
                                                           <object class="GtkLabel" id="player-viewers">
                                                             <property name="visible">True</property>
                                                             <property name="can-focus">False</property>
-                                                            <property name="label" translatable="yes">360</property>
+                                                            <property name="label" translatable="yes">0</property>
                                                           </object>
                                                           <packing>
                                                             <property name="expand">False</property>

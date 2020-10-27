@@ -1,5 +1,5 @@
 use {
-    crate::{get_obj, resources::APP_ID},
+    crate::{get_obj, resources::APP_ID, twitch::response::Stream},
     super::cards::{GameCard, LiveCard},
     std::rc::Rc,
     gtk::{Builder, Stack, FlowBox, prelude::*},
@@ -20,7 +20,7 @@ pub struct ViewsSection {
 
 impl ViewsSection {
 
-    pub fn configure(builder: &Builder, settings: &Settings, tx: Sender<(String, String)>) -> Rc<Self> {
+    pub fn configure(builder: &Builder, settings: &Settings, tx: Sender<Stream>) -> Rc<Self> {
 
         let inner = Rc::new(Self {
             views: get_obj!(builder, "views-stack"),

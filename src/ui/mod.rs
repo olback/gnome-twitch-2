@@ -1,7 +1,7 @@
 use {
     crate::{
         USER, p, rt, get_obj, resource, warning, new_err,
-        resources::APP_ID, twitch::TwitchExtras, error::GtResult
+        resources::APP_ID, twitch::{TwitchExtras, response::Stream}, error::GtResult
     },
     std::{rc::Rc, cell::RefCell},
     gtk::{
@@ -69,7 +69,7 @@ impl Ui {
         });
 
         // Start stream channel
-        let (tx, rx) = glib::MainContext::channel::<(String, String)>(glib::Priority::default());
+        let (tx, rx) = glib::MainContext::channel::<Stream>(glib::Priority::default());
 
         let inner = Rc::new(Self {
             search_section: search::SearchSection::configure(&builder),
@@ -88,16 +88,19 @@ impl Ui {
 
         rx.attach(None, clone!(
             @strong inner
-        => move |(title, user_name)| {
+        => move |stream| {
 
             inner.views_spinner_overlay.set_visible(true);
 
             let logged_in_user = (*USER.lock().unwrap()).clone().unwrap();
-            let a_user_name = user_name.clone();
+            let a_user_name = stream.user_name.clone();
 
             rt::run_cb_local(async move {
 
                 let access_token = p!(TwitchExtras::access_token(&a_user_name, Some(logged_in_user.oauth_token)).await);
+
+                // Add newline
+                // See https://github.com/rutgersc/m3u8-rs/issues/12
                 let usher = p!(TwitchExtras::usher(&a_user_name, access_token.sig, access_token.token).await) + "\n";
 
                 let parsed = m3u8_rs::parse_playlist_res(usher.as_bytes());
@@ -105,7 +108,6 @@ impl Ui {
                     Ok(m3u8_rs::playlist::Playlist::MasterPlaylist(mp)) => {
                         let mut qualities = Vec::with_capacity(mp.variants.len());
                         for mut variant in mp.variants {
-                            println!("{}: {}", variant.alternatives[0].name, variant.uri);
                             qualities.push((variant.alternatives.remove(0).name, variant.uri));
                         }
                         Ok(qualities)
@@ -120,15 +122,16 @@ impl Ui {
                     Ok(qualities) => {
                         // TODO:
                         // inner.chat_section.connect(&user_name);
-                        // TODO: Update viewer count and title periodically
-                        // TODO: Play default quality
                         inner.player_section.play(qualities[0].1.clone());
-                        inner.player_section.set_title(&title);
-                        inner.player_section.set_streamer(&user_name);
+                        inner.player_section.set_title(&stream.title);
+                        inner.player_section.set_streamer(&stream.user_name);
+                        inner.player_section.set_broadcaster_id(stream.user_id.clone());
+                        inner.player_section.set_viewer_count(stream.viewer_count);
+                        inner.player_section.start_update_loop(stream.user_id.clone());
                         inner.player_section.set_qualities(qualities);
                         inner.show_player();
                     },
-                    Err(e) => show_info_bar("Error", &e.to_string(), gtk::MessageType::Error)
+                    Err(e) => show_info_bar("Error", &e.to_string(), None::<&gtk::Widget>, gtk::MessageType::Error)
                 }
 
             }));
@@ -140,7 +143,12 @@ impl Ui {
 
         INFO_BAR.with(|ib| {
             let infobar = get_obj!(InfoBar, builder, "main-info");
-            infobar.connect_response(|ib, _| { ib.set_revealed(false); ib.set_visible(false); });
+            infobar.connect_response(|ib, res| {
+                if res == gtk::ResponseType::Close {
+                    ib.set_revealed(false);
+                    ib.set_visible(false);
+                }
+            });
             ib.borrow_mut().replace((
                 get_obj!(Label, builder, "main-info-title"),
                 get_obj!(Label, builder, "main-info-body"),
@@ -275,30 +283,28 @@ fn set_theme(settings: &Settings, gtk_settings: &gtk::Settings) {
     }
 }
 
-pub(super) fn show_info_bar(title: &str, body: &str, kind: gtk::MessageType) {
+pub(super) fn show_info_bar<W: glib::IsA<gtk::Widget>>(title: &str, body: &str, widget: Option<&W>, kind: gtk::MessageType) {
 
     INFO_BAR.with(|ib| {
         if let Some((ib_title, ib_body, infobar)) = &*ib.borrow() {
+            if let Some(ae) = infobar.get_action_area() {
+                for child in ae.get_children() {
+                    ae.remove(&child);
+                }
+            }
             ib_title.set_text(title);
             ib_body.set_text(body);
             infobar.set_message_type(kind);
+            if let Some(action_widget) = widget {
+                action_widget.show();
+                infobar.add_action_widget(action_widget, gtk::ResponseType::None)
+            }
             infobar.set_visible(true);
             infobar.set_revealed(true);
-            infobar.show();
+            infobar.show_all();
         } else {
             warning!("Infobar not initialized")
         }
     });
 
 }
-
-// pub(super) fn set_cursor<W: glib::IsA<gtk::Widget>>(widget: &W, cursor: gdk::CursorType) {
-
-//     use gdk::WindowExt;
-
-//     let display = gdk::Display::get_default().unwrap();
-//     let window = widget.get_parent_window().unwrap();
-//     let cursor = gdk::Cursor::new_for_display(&display, cursor);
-//     window.set_cursor(Some(&cursor));
-
-// }

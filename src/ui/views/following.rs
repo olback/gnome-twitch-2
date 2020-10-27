@@ -1,8 +1,9 @@
 use {
     crate::{
         USER, get_obj, rt, warning,
-        resources::{STREAM_COVER_SIZE, CLIENT_ID},
-        twitch::{Twitch, TwitchUtils, TwResult, response::Stream}
+        resources::CLIENT_ID,
+        twitch::{Twitch, TwResult, response::Stream},
+        ui::show_info_bar
     },
     super::super::cards::LiveCard,
     std::rc::Rc,
@@ -15,12 +16,12 @@ use {
 pub struct FollowingView {
     flow: Rc<FlowBox>,
     scroll: ScrolledWindow,
-    tx: Sender<(String, String)>
+    tx: Sender<Stream>
 }
 
 impl FollowingView {
 
-    pub fn configure(builder: &Builder, tx: Sender<(String, String)>) -> Rc<Self> {
+    pub fn configure(builder: &Builder, tx: Sender<Stream>) -> Rc<Self> {
 
         let inner = Rc::new(Self {
             flow: Rc::new(get_obj!(builder, "following-flowbox")),
@@ -102,15 +103,18 @@ impl FollowingView {
             }, clone!(@strong flow => move |res| {
                 match res {
                     Ok(streams) => for stream in streams {
-                        let lc = LiveCard::new(
-                            TwitchUtils::thumbnail_sizer(&stream.thumbnail_url, STREAM_COVER_SIZE.0, STREAM_COVER_SIZE.1),
-                            stream.title,
-                            stream.user_name,
-                            tx.clone()
-                        );
+                        let lc = LiveCard::new(stream, tx.clone());
                         flow.insert(lc.get_widget(), -1);
                     },
-                    Err(e) => warning!("{}", e)
+                    Err(e) => {
+                        warning!("{}", e);
+                        show_info_bar(
+                            "Error loading followers",
+                            &e.to_string(),
+                            None::<&gtk::Widget>,
+                            gtk::MessageType::Error
+                        );
+                    }
                 }
             }));
 

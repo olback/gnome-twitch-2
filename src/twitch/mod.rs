@@ -50,6 +50,24 @@ macro_rules! multi_val_query {
     };
 }
 
+async fn handle_response_errors(response: reqwest::Response) -> TwResult<reqwest::Response> {
+
+    let status_code = response.status().as_u16();
+    if !response.status().is_success() {
+        match response.json::<TwitchResponseError>().await {
+            Ok(err) => {
+                if err.message.is_empty() {
+                    Err(TwError::new(err.error, line!(), file!()))
+                } else {
+                    Err(TwError::new(err.message, line!(), file!()))
+                }
+            },
+            Err(e) => Err(TwError::new(format!("Unknown error ({}) ({})", status_code, e.to_string()), line!(), file!()))
+        }
+    } else { Ok(response) }
+
+}
+
 const TWITCH_API_URL: &'static str = "https://api.twitch.tv";
 const USER_AGENT: &'static str = concat!("Gnome-Twitch-2/", include_str!(concat!(env!("OUT_DIR"), "/version.txt")));
 
@@ -90,8 +108,24 @@ impl Twitch {
     // https://dev.twitch.tv/docs/api/reference#get-extension-transactions
     // pub async fn get_extension_transactions(&self) -> TwResult<TwitchResponse<T>> {}
 
-    // https://dev.twitch.tv/docs/api/reference#create-clip
-    // pub async fn create_clip(&self) -> TwResult<TwitchResponse<T>> {}
+    /// Create a clip
+    /// https://dev.twitch.tv/docs/api/reference#create-clip
+    pub async fn create_clip(&self, broadcaster_id: String, has_delay: Option<bool>) -> TwResult<TwitchResponse<ClipCreated>> {
+
+        let len = 1 + olen!(has_delay);
+
+        let mut query = Vec::with_capacity(len);
+        query.push(("broadcaster_id", broadcaster_id));
+        val_query!("has_delay", has_delay, query);
+
+        let client = self.base_request()?;
+        let res = client
+            .post(&Self::url("/helix/clips", &query)?)
+            .send().await
+            .map(handle_response_errors)?.await?;
+        Ok(res.json().await?)
+
+    }
 
     // https://dev.twitch.tv/docs/api/reference#get-clips
     // pub async fn get_clips(&self) -> TwResult<TwitchResponse<T>> {}
@@ -130,7 +164,10 @@ impl Twitch {
         val_query!("first", first, query);
 
         let client = self.base_request()?;
-        let response = client.get(&Self::url("/helix/games/top", &query)?).send().await?;
+        let response = client
+            .get(&Self::url("/helix/games/top", &query)?)
+            .send().await
+            .map(handle_response_errors)?.await?;
         Ok(response.json().await?)
 
     }
@@ -153,7 +190,10 @@ impl Twitch {
         multi_val_query!("name", names, query);
 
         let client = self.base_request()?;
-        let response = client.get(&Self::url("/helix/games", &query)?).send().await?;
+        let response = client
+            .get(&Self::url("/helix/games", &query)?)
+            .send().await
+            .map(handle_response_errors)?.await?;
         Ok(response.json().await?)
 
     }
@@ -218,7 +258,10 @@ impl Twitch {
         multi_val_query!("user_login", user_logins, query);
 
         let client = self.base_request()?;
-        let response = client.get(&Self::url("/helix/streams", &query)?).send().await?;
+        let response = client
+            .get(&Self::url("/helix/streams", &query)?)
+            .send().await
+            .map(handle_response_errors)?.await?;
         Ok(response.json().await?)
 
     }
@@ -269,7 +312,10 @@ impl Twitch {
         multi_val_query!("login", logins, query);
 
         let client = self.base_request()?;
-        let response = client.get(&Self::url("/helix/users", &query)?).send().await?;
+        let response = client
+            .get(&Self::url("/helix/users", &query)?)
+            .send().await
+            .map(handle_response_errors)?.await?;
         Ok(response.json().await?)
 
     }
@@ -298,7 +344,10 @@ impl Twitch {
         val_query!("to_id", to_id, query);
 
         let client = self.base_request()?;
-        let response = client.get(&Self::url("/helix/users/follows", &query)?).send().await?;
+        let response = client
+            .get(&Self::url("/helix/users/follows", &query)?)
+            .send().await
+            .map(handle_response_errors)?.await?;
 
         Ok(response.json().await?)
 

@@ -1,8 +1,8 @@
 use {
     crate::{
-        resource, get_obj, message, warning, error::GtResult, resources::APP_ID,
+        resource, get_obj, message, warning, error::GtResult, resources::{APP_ID, CLIENT_ID},
         backends::{GtPlayerBackend, BACKENDS, GtPlayerState, GtPlayerEvent},
-        ui::show_info_bar
+        rt, USER, ui::show_info_bar, twitch::{Twitch, TwResult}
     },
     std::{rc::Rc, cell::RefCell},
     gtk::{
@@ -10,9 +10,10 @@ use {
         Revealer, MenuButton, VolumeButton, ApplicationWindow, Image, Label, EventBox, prelude::*
     },
     gio::{SimpleAction, Settings, SettingsExt, SettingsBindFlags, prelude::*},
-    glib::clone
-    // gst::prelude::*
+    glib::{clone, SourceId, Sender}
 };
+
+const UPDATE_INTERVAL: u32 = 15;
 
 pub struct PlayerSection {
     player: Box<dyn GtPlayerBackend>,
@@ -20,7 +21,10 @@ pub struct PlayerSection {
     streamer: Label,
     viewers: Label,
     settings_button: MenuButton,
-    quality_selection_action: SimpleAction
+    quality_selection_action: SimpleAction,
+    loop_handle: RefCell<Option<SourceId>>,
+    tx: Sender<(String, u32)>,
+    broadcaster_id: RefCell<Option<String>>
 }
 
 impl PlayerSection {
@@ -88,12 +92,16 @@ impl PlayerSection {
         let cb = clone!(
             @strong play_pause_button
         => move |evt| {
-            println!("New state: {:#?}", evt);
             match evt {
                 GtPlayerEvent::StateChange(state) => match state {
                     GtPlayerState::Eos => {
                         play_pause_button.set_image(Some(&play_image));
-                        show_info_bar("The stream has ended", "", MessageType::Info);
+                        show_info_bar(
+                            "The stream has ended",
+                            "The stramer ended the stream. Thanks for watching!",
+                            None::<&gtk::Widget>,
+                            MessageType::Info
+                        );
                         buffer_spinner.set_visible(false);
                     },
                     GtPlayerState::Buffering => {
@@ -115,14 +123,17 @@ impl PlayerSection {
                 },
                 GtPlayerEvent::Warning(warning) => {
                     // show_info_bar("Player warning", &warning, MessageType::Warning)
+                    show_info_bar("Player warning", &warning, None::<&gtk::Widget>, MessageType::Warning);
                     warning!("{}", warning);
                 },
                 GtPlayerEvent::Error(error) => {
-                    show_info_bar("Player error", &error, MessageType::Error);
+                    show_info_bar("Player error", &error, None::<&gtk::Widget>, MessageType::Error);
                     warning!("{}", error);
                 }
             }
         });
+
+        let (tx, rx) = glib::MainContext::channel::<(String, u32)>(glib::PRIORITY_DEFAULT);
 
         let inner = Rc::new(Self {
             player: get_backend(settings)(settings, Box::new(cb)).unwrap(),
@@ -130,8 +141,74 @@ impl PlayerSection {
             streamer: get_obj!(builder, "player-streamer"),
             viewers: get_obj!(builder, "player-viewers"),
             settings_button: get_obj!(builder, "player-menu-button"),
-            quality_selection_action
+            quality_selection_action,
+            loop_handle: RefCell::new(None),
+            tx,
+            broadcaster_id: RefCell::new(None)
         });
+
+        rx.attach(None, clone!(@strong inner => move |msg| {
+
+            inner.set_title(&msg.0);
+            inner.set_viewer_count(msg.1);
+
+            glib::Continue(true)
+
+        }));
+
+        get_obj!(Button, builder, "player-clip").connect_clicked(clone!(@strong inner => move |_| {
+
+            if let Some(user) = (*USER.lock().unwrap()).clone() {
+                if let Some(bid) = (&*inner.broadcaster_id.borrow()).clone() {
+                    rt::run_cb_local(async move {
+                        let tw = Twitch::new(Some(user.oauth_token), Some(CLIENT_ID.into()));
+                        let res = tw.create_clip(bid, None).await?;
+                        Ok(res.data)
+                    }, |msg: TwResult<_>| {
+                        match msg {
+                            // This vec should always contain one item on success, but check anyways
+                            // since we don't want to crash if Twitch messes up :)
+                            Ok(mut clips) => match clips.pop() {
+                                Some(clip) => {
+                                    let button = Button::with_label("Edit");
+                                    button.connect_clicked(move |_| {
+                                        if let Err(e) = gtk::show_uri_on_window(None::<&gtk::Window>, &clip.edit_url, 0) {
+                                            warning!("{}", e)
+                                        }
+                                    });
+                                    show_info_bar(
+                                        "Clip created",
+                                        "Click the edit button to edit your new clip.",
+                                        Some(&button),
+                                        gtk::MessageType::Info
+                                    )
+                                },
+                                None => show_info_bar(
+                                    "Clip error",
+                                    "Clip sucessfully created but no data returned.",
+                                    None::<&gtk::Widget>,
+                                    gtk::MessageType::Error
+                                )
+                            },
+                            Err(e) => show_info_bar(
+                                "Clip error",
+                                &e.to_string(),
+                                None::<&gtk::Widget>,
+                                gtk::MessageType::Error
+                            )
+                        }
+                    });
+
+
+                } else { show_info_bar(
+                    "Clip error",
+                    "Broadcaster ID not set",
+                    None::<&gtk::Widget>,
+                    gtk::MessageType::Error
+                ) }
+            }
+
+        }));
 
         inner.quality_selection_action.connect_activate(clone!(@strong inner => move |act, url| {
             if let Some(ref val) = url {
@@ -151,12 +228,22 @@ impl PlayerSection {
             match inner.player.get_state() {
                 GtPlayerState::Playing => {
                     if let Err(e) = inner.player.pause() {
-                        show_info_bar("Could not pause", &format!("{}", e), MessageType::Error)
+                        show_info_bar(
+                            "Could not pause",
+                            &e.to_string(),
+                            None::<&gtk::Widget>,
+                            MessageType::Error
+                        )
                     }
                 },
                 GtPlayerState::Paused => {
                     if let Err(e) = inner.player.play() {
-                        show_info_bar("Could not play", &format!("{}", e), MessageType::Error)
+                        show_info_bar(
+                            "Could not play",
+                            &e.to_string(),
+                            None::<&gtk::Widget>,
+                            MessageType::Error
+                        )
                     }
                 }
                 _ => { }
@@ -185,27 +272,68 @@ impl PlayerSection {
 
     }
 
-    pub fn set_views(&self, views: u32) {
+    pub fn set_broadcaster_id(&self, id: String) {
+
+        self.broadcaster_id.replace(Some(id));
+
+    }
+
+    pub fn set_viewer_count(&self, views: u32) {
 
         self.viewers.set_text(&format!("{}", views))
 
     }
 
-    pub fn set_qualities(&self, qualities: Vec<(String, String)>) {
+    pub fn start_update_loop(&self, bid: String) {
 
-        // let player_menu = gio::Menu::new();
-        // let quality_options = gio::Menu::new();
-        // let quality_options_source = gio::MenuItem::new(Some("Source (1080p60)"), None);
-        // quality_options_source.set_attribute_value("type", Some(&"radioitem".into()));
-        // quality_options.append_item(&quality_options_source);
-        // let quality_options_high = gio::MenuItem::new(Some("High (720p60)"), None);
-        // quality_options.append_item(&quality_options_high);
-        // let quality_options_medium = gio::MenuItem::new(Some("Medium (480p)"), None);
-        // quality_options.append_item(&quality_options_medium);
-        // let quality_options_low = gio::MenuItem::new(Some("Low (360p)"), None);
-        // quality_options.append_item(&quality_options_low);
-        // player_menu.append_submenu(Some("Quality"), &quality_options);
-        // get_obj!(gtk::MenuButton, builder, "player-menu-button").set_menu_model(Some(&player_menu));
+        let tx = self.tx.clone();
+
+        let id = glib::timeout_add_seconds_local(UPDATE_INTERVAL, move || {
+
+            if let Some(user) = (*USER.lock().unwrap()).clone() {
+
+                let bid = bid.clone();
+
+                rt::run_cb_local(async move {
+
+                    let tw = Twitch::new(Some(user.oauth_token), Some(CLIENT_ID.into()));
+                    let res = tw.get_streams(
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        Some(vec![bid]),
+                        None
+                    ).await?;
+                    Ok(res.data)
+
+                }, clone!(@strong tx => move |msg: TwResult<_>| {
+
+                    match msg {
+                        Ok(mut streams) => {
+                            // Pop removes the last element but it should not matter here
+                            // since we expect max one stream.
+                            if let Some(stream) = streams.pop() {
+                                tx.send((stream.title, stream.viewer_count)).expect("Could not send update");
+                            }
+                        },
+                        Err(e) => warning!("{}", e)
+                    }
+
+                }));
+
+            }
+
+            glib::Continue(true)
+
+        });
+
+        self.loop_handle.replace(Some(id));
+
+    }
+
+    pub fn set_qualities(&self, qualities: Vec<(String, String)>) {
 
         let player_menu = gio::Menu::new();
         for (name, url) in qualities {
@@ -234,7 +362,10 @@ impl PlayerSection {
 
     pub fn stop(&self) {
 
-        drop(self.player.stop())
+        drop(self.player.stop());
+        self.loop_handle.borrow_mut().take().map(|id| {
+            glib::source_remove(id)
+        });
 
     }
 

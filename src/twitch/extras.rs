@@ -24,7 +24,10 @@ impl TwitchExtras {
             Some(TWITCH_ACCESS_TOKEN_CLIENT_ID.into())
         ).base_request()?;
 
-        let response = client.get(&Twitch::url(&format!("/api/channels/{}/access_token.json", username), &[])?).send().await?;
+        let response = client
+            .get(&Twitch::url(&format!("/api/channels/{}/access_token.json", username), &[])?)
+            .send().await
+            .map(super::handle_response_errors)?.await?;
         Ok(response.json().await?)
 
     }
@@ -34,6 +37,8 @@ impl TwitchExtras {
         let query: Vec<(&'static str, String)> = vec![
             ("player", "twitchweb".into()),
             ("type", "any".into()),
+            ("fast_bread", "true".into()),
+            ("playlist_include_framerate", "true".into()),
             ("allow_source", "true".into()),
             ("allow_audio_only", "true".into()),
             ("allow_spectre", "false".into()),
@@ -44,7 +49,7 @@ impl TwitchExtras {
 
         let url = usher_url(username, &query)?;
 
-        Ok(reqwest::get(&url).await?.text().await?)
+        Ok(reqwest::get(&url).await.map(super::handle_response_errors)?.await?.text().await?)
 
     }
 
@@ -63,4 +68,3 @@ fn usher_url(username: &str, query: &[(&str, String)]) -> TwResult<String> {
     Ok(url.to_string())
 
 }
-

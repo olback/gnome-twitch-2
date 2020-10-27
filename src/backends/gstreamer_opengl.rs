@@ -3,7 +3,7 @@
 // https://gitlab.freedesktop.org/gstreamer/gstreamer-rs/-/blob/master/examples/src/bin/gtkvideooverlay.rs
 
 use {
-    crate::{p, warning, new_err, error::GtResult},
+    crate::{p, warning, new_err, error::GtResult, ui::show_info_bar},
     super::{GtPlayerBackend, GtPlayerState, GtPlayerEvent, GtPlayerEventCb},
     std::{rc::Rc, cell::RefCell, os::raw::c_void},
     gtk::{Widget, prelude::*},
@@ -58,10 +58,22 @@ impl BackendGStreamerOpenGL {
 
                 if !gdk_window.ensure_native() {
                     warning!("Can't create native window for widget");
+                    show_info_bar(
+                        "Internal error",
+                        "Can't create native window for widget",
+                        None::<&gtk::Widget>,
+                        gtk::MessageType::Error
+                    );
                 }
 
                 if let Err(e) = set_window_handle(&video_overlay, &gdk_window) {
-                    warning!("{}", e)
+                    warning!("{}", e);
+                    show_info_bar(
+                        "Internal error",
+                        &e.to_string(),
+                        None::<&gtk::Widget>,
+                        gtk::MessageType::Error
+                    );
                 }
             });
 
