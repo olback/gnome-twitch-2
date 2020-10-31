@@ -45,7 +45,7 @@ impl BackendGStreamerOpenGL {
 
         let video_overlay = video_sink
                 .dynamic_cast::<gstv::VideoOverlay>()
-                .unwrap()
+                .expect("VideoOverlay dynamic_cast failed")
                 .downgrade();
 
             widget.connect_realize(move |video_window| {
@@ -54,7 +54,11 @@ impl BackendGStreamerOpenGL {
                     None => return,
                 };
 
-                let gdk_window = video_window.get_toplevel().unwrap().get_window().unwrap();
+                let gdk_window = video_window
+                    .get_toplevel()
+                    .expect("Could not get toplevel")
+                    .get_window()
+                    .expect("Window is None");
 
                 if !gdk_window.ensure_native() {
                     warning!("Can't create native window for widget");

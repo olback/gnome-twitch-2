@@ -1,5 +1,5 @@
 use {
-    crate::{get_obj, resource, resources::APP_ID, backends::{BACKENDS, backend_id_valid}},
+    crate::{get_obj, resource, backends::{BACKENDS, backend_id_valid}},
     std::rc::Rc,
     gtk::{ApplicationWindow, Builder, ComboBoxText, Button, InfoBar, Label, Window, prelude::*},
     gio::{Settings, SettingsExt, SettingsBindFlags},
@@ -9,7 +9,7 @@ use {
 pub struct SettingsWindow {
     window: Window,
     info_bar: InfoBar,
-    info_bar_label: Label
+    // info_bar_label: Label
 }
 
 impl SettingsWindow {
@@ -69,7 +69,7 @@ impl SettingsWindow {
         Rc::new(Self {
             window: settings_window,
             info_bar,
-            info_bar_label
+            // info_bar_label
         })
 
     }

@@ -1,12 +1,12 @@
 use {
     crate::{
-        resource, get_obj, message, warning, error::GtResult, resources::{APP_ID, CLIENT_ID},
+        get_obj, warning, error::GtResult, resources::CLIENT_ID,
         backends::{GtPlayerBackend, BACKENDS, GtPlayerState, GtPlayerEvent},
         rt, USER, ui::show_info_bar, twitch::{Twitch, TwResult}
     },
     std::{rc::Rc, cell::RefCell},
     gtk::{
-        Application, Builder, Box as GtkBox, Button, ToggleButton, IconSize, MessageType, Spinner,
+        Builder, Box as GtkBox, Button, ToggleButton, IconSize, MessageType, Spinner,
         Revealer, MenuButton, VolumeButton, ApplicationWindow, Image, Label, EventBox, prelude::*
     },
     gio::{SimpleAction, Settings, SettingsExt, SettingsBindFlags, prelude::*},
@@ -29,7 +29,7 @@ pub struct PlayerSection {
 
 impl PlayerSection {
 
-    pub fn configure(app: &Application, builder: &Builder, settings: &Settings) -> Rc<Self> {
+    pub fn configure(builder: &Builder, settings: &Settings) -> Rc<Self> {
 
         let is_fullscreen = Rc::new(RefCell::new(false));
         let fullscreen_image = get_obj!(Image, builder, "fullscreen-image");

@@ -1,7 +1,7 @@
 [package]
 name = "gnome-twitch-2"
 version = "0.1.0"
-authors = ["Edwin Svensson <gnome-twitch-2@olback.net>"]
+authors = ["Edwin Svensson <gnome_twitch_2@olback.net>"]
 edition = "2018"
 description = "Watch your favorite Twitch streamers in an GTK app!"
 homepage = "https://github.com/olback/gnome-twitch-2"
@@ -36,7 +36,7 @@ rusqlite = { version = "0.24", features = [ "bundled" ] }
 # I/O
 tokio = { version = "0.2", features = [ "full" ] }
 reqwest = { version = "0.10", features = [ "json" ] }
-# twitchchat = { git = "", features = [ "async", "tokio", "tokio-utils", "tokio-native-tls", "native-tls" ] }
+twitchchat = { version = "0.14", features = [ "async", "tokio", "tokio-util", "tokio-native-tls", "native-tls" ] }
 keyring = "0.10"
 
 [build-dependencies]

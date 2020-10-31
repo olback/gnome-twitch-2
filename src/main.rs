@@ -19,7 +19,7 @@ mod rt;
 mod user;
 
 lazy_static::lazy_static! {
-    pub static ref ASSETS: ResourceLoader = ResourceLoader::new("assets.db").unwrap();
+    pub static ref ASSETS: ResourceLoader = ResourceLoader::new("assets.db").expect("Failed to initialize resource loader");
     // TODO: This should probably be a tokio::sync::Mutex instead of std::sync::Mutex
     pub static ref USER: Mutex<Option<User>> = Mutex::new(None);
 }

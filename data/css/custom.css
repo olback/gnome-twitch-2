@@ -64,3 +64,8 @@ button, modelbutton, row {
 .black-background {
   background-color: #000;
 }
+
+textview,
+textview * {
+  color: inherit;
+}

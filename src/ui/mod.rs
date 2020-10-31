@@ -6,7 +6,7 @@ use {
     std::{rc::Rc, cell::RefCell},
     gtk::{
         Application, ApplicationInhibitFlags, ApplicationWindow, Label, InfoBar, Revealer,
-        StackTransitionType, SettingsExt as GtkSettingsExt, Button, Stack, prelude::*
+        StackTransitionType, SettingsExt as GtkSettingsExt, ToggleButton, Button, Stack, prelude::*
     },
     gio::{SimpleAction, SimpleActionGroup, Settings, SettingsExt, prelude::*},
     glib::clone
@@ -80,7 +80,7 @@ impl Ui {
             views_section: views::ViewsSection::configure(&builder, &settings, tx),
             chat_section: chat::ChatSection::configure(&builder),
             // Make sure to configure SettingsWindow before PlayerSection!
-            player_section: player::PlayerSection::configure(app, &builder, &settings),
+            player_section: player::PlayerSection::configure(&builder, &settings),
             main_window,
             main_stack: get_obj!(builder, "main-stack"),
             views_spinner_overlay: get_obj!(builder, "views-spinner-overlay")
@@ -121,7 +121,7 @@ impl Ui {
                 match res {
                     Ok(qualities) => {
                         // TODO:
-                        // inner.chat_section.connect(&user_name);
+                        inner.chat_section.connect(stream.user_name.clone());
                         inner.player_section.play(qualities[0].1.clone());
                         inner.player_section.set_title(&stream.title);
                         inner.player_section.set_streamer(&stream.user_name);
@@ -162,8 +162,7 @@ impl Ui {
             match name.as_str() {
                 "player" => headerbar_stack.set_visible_child_full("return-to-views", StackTransitionType::SlideRight),
                 _ => {
-                    // TODO:
-                    // inner.chat_section.disconnect()
+                    inner.chat_section.disconnect();
                     inner.player_section.stop();
                     headerbar_stack.set_visible_child_full("main-menu", StackTransitionType::SlideLeft);
                 }
@@ -180,6 +179,13 @@ impl Ui {
             settings.set_int("window-height", height).unwrap();
             gtk::Inhibit(false)
         });
+
+        get_obj!(ToggleButton, builder, "app-search-button").connect_toggled(clone!(@strong inner => move |btn| {
+            match btn.get_active() {
+                true => inner.search_section.show(),
+                false => inner.search_section.hide()
+            }
+        }));
 
         let reload_action = SimpleAction::new("reload", None);
         app_action_group.add_action(&reload_action);

@@ -29,9 +29,15 @@ impl BackendGStreamer {
     pub fn new(settings: &Settings, cb: GtPlayerEventCb) -> GtResult<Self> {
 
         let (video_sink, widget) = {
-            let sink = gst::ElementFactory::make("gtksink", None).unwrap();
-            let widget = sink.get_property("widget").unwrap();
-            (sink, widget.get::<gtk::Widget>().unwrap().unwrap())
+            let sink = gst::ElementFactory::make("gtksink", None).expect("gtksink could not be created");
+            let widget = sink.get_property("widget").expect("widget not found in gtksink");
+            (
+                sink,
+                widget
+                    .get::<gtk::Widget>()
+                    .expect("Cast from glib::Value to gtk::Widget failed")
+                    .expect("Widget is None")
+            )
         };
 
         let playbin = p!(GstElementFactory::make("playbin", None));

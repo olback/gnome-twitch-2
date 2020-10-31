@@ -44,7 +44,7 @@ impl GameCard {
         fbc.add(&evbox);
         fbc.show_all();
 
-        evbox.connect_button_press_event(|evbox, evbutton| {
+        evbox.connect_button_press_event(|_, evbutton| {
             if evbutton.get_button() == 1 {
                 println!("Game clicked");
             }

@@ -27,12 +27,18 @@ impl User {
 
         let settings = Settings::new(APP_ID);
 
-        let username = settings.get_string("user-name").unwrap().to_string();
+        let username = settings
+            .get_string("user-name")
+            .map(|u| u.to_string())
+            .unwrap_or(String::new());
         if username.trim().is_empty() {
             return Err(new_err!("Username not set"));
         }
 
-        let user_id = settings.get_string("user-id").unwrap().to_string();
+        let user_id = settings
+            .get_string("user-id")
+            .map(|u| u.to_string())
+            .unwrap_or(String::new());
         if user_id.trim().is_empty() {
             return Err(new_err!("User ID not set"));
         }

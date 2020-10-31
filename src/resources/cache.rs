@@ -57,7 +57,7 @@ impl AssetCache {
                 key: row.get("key")?,
                 data: row.get("data")?
             })
-        })).map(|a| a.unwrap()).collect::<Vec<_>>();
+        })).map(|a| a.expect("Database broken")).collect::<Vec<_>>();
 
         match results.len() {
             0 => Ok(None),
@@ -111,18 +111,18 @@ impl AssetCache {
 
     }
 
-    pub fn clear(&self) -> GtResult<()> {
+    // pub fn clear(&self) -> GtResult<()> {
 
-        p!(self.con.execute("delete from assets", params![]));
-        Ok(())
+    //     p!(self.con.execute("delete from assets", params![]));
+    //     Ok(())
 
-    }
+    // }
 
-    pub fn path(&self) -> &PathBuf {
+    // pub fn path(&self) -> &PathBuf {
 
-        &self.path
+    //     &self.path
 
-    }
+    // }
 
     fn key(name: &str) -> String {
 

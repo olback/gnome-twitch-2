@@ -1,8 +1,7 @@
 use {
-    crate::{get_obj, resources::APP_ID, twitch::response::Stream},
-    super::cards::{GameCard, LiveCard},
+    crate::{get_obj, twitch::response::Stream},
     std::rc::Rc,
-    gtk::{Builder, Stack, FlowBox, prelude::*},
+    gtk::{Builder, Stack, prelude::*},
     gio::{Settings, SettingsExt},
     glib::{clone, Sender}
 };
@@ -39,7 +38,7 @@ impl ViewsSection {
         // Figure out why connect_notify require things
         // to be Send + Sync.
         // This *seems* to be working though.
-        unsafe { inner.views.connect_notify_unsafe(Some("visible-child-name"), clone!(@strong inner => move |stack, ps| {
+        unsafe { inner.views.connect_notify_unsafe(Some("visible-child-name"), clone!(@strong inner => move |stack, _| {
             let view_name = stack.get_visible_child_name().map(|v| v.to_string()).unwrap_or(String::new());
             match view_name.as_str() {
                 "channels" => inner.channels.refresh(),
