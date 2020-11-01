@@ -1,5 +1,8 @@
 use {
-    crate::{USER, p, get_obj, debug, warning, rt, error::GtResult, ui::show_info_bar},
+    crate::{
+        ASSETS, USER, p, get_obj, debug, warning, rt, error::GtResult,
+        ui::show_info_bar, resources::bytes_to_pixbuf
+    },
     std::{rc::Rc, cell::RefCell},
     twitchchat::{
         commands, UserConfig,
@@ -16,6 +19,12 @@ use {
     glib::{clone, Sender}
 };
 
+#[derive(Debug)]
+pub enum MessagePart {
+    Text(String),
+    Pixbuf(Pixbuf)
+}
+
 type RGB = (u8, u8, u8);
 
 // Stolen from https://github.com/vinszent/gnome-twitch/blob/master/src/gt-chat.c#L43
@@ -24,23 +33,6 @@ const DEFAULT_CHAT_COLORS: &'static [RGB] = &[
     (0xff, 0x7f, 0x50), (0x9a, 0xcd, 0x32), (0xff, 0x45, 0x00), (0x2e, 0x8b, 0x57),
     (0xda, 0xa5, 0x20), (0xd2, 0x69, 0x1e), (0x5f, 0x9e, 0xa0), (0x1e, 0x90, 0xff),
     (0xff, 0x69, 0xb4), (0x8a, 0x2b, 0xe2), (0x00, 0xff, 0x7f)
-];
-
-const EMOJI_REPLACEMENT_CODES: &'static [(&'static [&'static str], &'static str)] = &[
-    (&[":)", ":-)"], "😀"),
-    (&[":(", ":-("], "😞"),
-    (&[":D", ":-D"], "😁"),
-    (&[">(", ">:("], "😠"),
-    (&[":|", ":-|"], "😐"),
-    (&["o_O", "O_o"], "🤨"),
-    (&["B)", "B-)"], "😎"),
-    (&[":O", ":o", ":-O", ":-o"], "😮"),
-    (&["<3"], "💜"),
-    (&[":/", ":-/"], "😕"),
-    (&[";)", ";-)"], "😉"),
-    (&[":P", ":p", ":-P", ":-p"], "😛"),
-    (&[";P", ";p", ";-P", ";-p"], "😜"),
-    // (&["R)", "R-)"], ""),
 ];
 
 pub struct ChatSection {
@@ -79,31 +71,84 @@ impl ChatSection {
 
         rx.attach(None, clone!(@strong inner => move |command| {
 
-            debug!("{:#?}", command);
+            // debug!("{:#?}", command);
 
             match command {
-                // Commands::ClearChat(clear_chat) => { },
+                Commands::RoomState(room_state) => {
+                    warning!("TODO {:#?}", room_state)
+                },
+                // Commands::ClearChat(_) => {
+                //     inner.clear_chat()
+                // },
+                Commands::Notice(notice) => {
+                    inner.append_notice(notice.message())
+                },
+                Commands::UserNotice(user_notice) => if let Some(message) = user_notice.message() {
+                    inner.append_notice(message)
+                },
                 Commands::Privmsg(privmsg) => {
-                    // TODO: Handle Badges, Emotes and cheers.
-                    let from = privmsg.display_name().unwrap_or(privmsg.name());
+                    // TODO: Handle Badges and cheers.
+                    let from = privmsg.display_name().unwrap_or(privmsg.name()).to_string();
                     let color = privmsg.color()
                         .map(|c| (c.rgb.red(), c.rgb.green(), c.rgb.blue()))
-                        .unwrap_or(get_color(from));
-                    let mut body = String::from(privmsg.data());
-                    // This is a temporary solution. This has to be done
-                    // in a backwards loop together with the Twitch emotes
-                    for (variants, replacement) in EMOJI_REPLACEMENT_CODES {
-                        for variant in *variants {
-                            body = body.replace(variant, replacement);
+                        .unwrap_or(get_color(&from));
+                    let body = String::from(privmsg.data());
+                    let badges = privmsg.badges();
+                    let emotes = privmsg.emotes();
+
+                    rt::run_cb_local(async move {
+                        let mut emotes_data = Vec::<(usize, Vec<u8>)>::with_capacity(emotes.len());
+                        for emote in emotes {
+                            match ASSETS.load(&format!("https://static-cdn.jtvnw.net/emoticons/v1/{}/1.0", emote.id)).await {
+                                Ok(data) => emotes_data.push((emote.id, data)),
+                                Err(e) => warning!("{:#?}", e)
+                            }
                         }
-                    }
-                    inner.append_message(
-                        &[] as &[&Pixbuf],
-                        color,
-                        from,
-                        &body,
-                        &[] as &[((usize, usize), &Pixbuf)]
-                    );
+                        emotes_data
+                    }, clone!(@strong inner, @strong privmsg => move |emotes_data| {
+
+                        // FIXME:TODO: This almost always fails, why?
+                        let emotes_id_pixbuf = emotes_data
+                            .into_iter()
+                            .filter_map(|(id, data)| match bytes_to_pixbuf(&data, Some((18, 18))) {
+                                Ok(p) => Some((id, p)),
+                                Err(e) => {
+                                    warning!("{:#?}", e);
+                                    None
+                                }
+                            })
+                            .collect::<Vec::<(usize, Pixbuf)>>();
+
+                        debug!("{:#?}", emotes_id_pixbuf);
+
+                        let mut emotes = Vec::<((usize, usize), Pixbuf)>::new();
+
+                        for emote in privmsg.emotes() {
+                            for (loaded_emote_id, loaded_emote_pixbuf) in &emotes_id_pixbuf {
+                                if &emote.id == loaded_emote_id {
+                                    for emote_range in emote.ranges {
+                                        emotes.push((
+                                            (emote_range.start as usize, emote_range.end as usize),
+                                            loaded_emote_pixbuf.clone()
+                                        ))
+                                    }
+                                    break
+                                }
+                            }
+                        }
+
+                        emotes.sort_by(|a, b| a.0.0.cmp(&b.0.0));
+                        let msg_parts = partify(body.clone(), emotes);
+
+                        inner.append_message(
+                            &[] as &[&Pixbuf],
+                            color,
+                            &from,
+                            msg_parts
+                        )
+
+                    }));
+
                 }
                 _ => { /* Unhandled message, do nothing */ }
             }
@@ -148,16 +193,17 @@ impl ChatSection {
 
     }
 
-    pub fn append_message<B: AsRef<Pixbuf>, E: AsRef<Pixbuf>>(
+    pub fn append_message<B: AsRef<Pixbuf>>(
         &self,
         badges: &[B],
         color: RGB,
         from: &str,
-        text: &str,
-        emotes: &[((usize, usize), E)]
+        msg_parts: Vec<MessagePart>
     ) {
 
-        // TODO: Emotes
+        // TODO: Links
+        // MessagePart
+        // let mut parts = Vec::<MessagePart>::new();
 
         // Badges
         for badge in badges {
@@ -165,7 +211,10 @@ impl ChatSection {
                 &mut self.buffer.get_end_iter(),
                 badge.as_ref()
             );
-            self.buffer.insert_at_cursor(" ");
+            self.buffer.insert(
+                &mut self.buffer.get_end_iter(),
+                " "
+            );
         }
 
         let rgb_str = format!("#{:02x}{:02x}{:02x}", color.0, color.1, color.2);
@@ -191,16 +240,44 @@ impl ChatSection {
         );
 
         // Colon and space after username
-        self.buffer.insert_at_cursor(": ");
-
-        // Message
         self.buffer.insert(
             &mut self.buffer.get_end_iter(),
-            text
+            ": "
         );
 
+        // Message
+        for part in msg_parts {
+            match part {
+                MessagePart::Text(text) => self.buffer.insert(
+                    &mut self.buffer.get_end_iter(),
+                    &text
+                ),
+                MessagePart::Pixbuf(pixbuf) => self.buffer.insert_pixbuf(
+                    &mut self.buffer.get_end_iter(),
+                    &pixbuf
+                )
+            }
+        }
+
         // New line after each message
-        self.buffer.insert_at_cursor("\n\n");
+        self.buffer.insert(
+            &mut self.buffer.get_end_iter(),
+            "\n\n"
+        );
+
+    }
+
+    pub fn append_notice(&self, notice: &str) {
+
+        self.buffer.insert(
+            &mut self.buffer.get_end_iter(),
+            notice
+        );
+
+        self.buffer.insert(
+            &mut self.buffer.get_end_iter(),
+            "\n\n"
+        );
 
     }
 
@@ -366,5 +443,38 @@ fn get_color(username: &str) -> RGB {
     }
 
     DEFAULT_CHAT_COLORS[index % DEFAULT_CHAT_COLORS.len()]
+
+}
+
+// TODO:
+// FIXME: Handle UTF-8 stuff.
+// https://crates.io/crates/unicode-segmentation
+// str::chars may also work
+fn partify(msg: String, emotes: Vec<((usize, usize), Pixbuf)>) -> Vec<MessagePart> {
+
+    let mut parts = Vec::new();
+
+    if emotes.len() == 0 {
+        parts.push(MessagePart::Text(msg));
+        return parts
+    }
+
+    for i in 0..emotes.len() {
+
+        if i == 0 && !msg.as_str()[0..emotes[i].0.0].is_empty() {
+            parts.push(MessagePart::Text(msg.as_str()[0..emotes[i].0.0].to_string()));
+        }
+
+        parts.push(MessagePart::Pixbuf(emotes[i].1.clone()));
+
+        if i + 1 < emotes.len() {
+            parts.push(MessagePart::Text(msg.as_str()[emotes[i].0.1+1..emotes[i+1].0.0].to_string()));
+        } else if !&msg.as_str()[emotes[i].0.1+1..].is_empty() {
+            parts.push(MessagePart::Text(msg.as_str()[emotes[i].0.1+1..].to_string()));
+        }
+
+    }
+
+    parts
 
 }

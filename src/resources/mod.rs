@@ -47,7 +47,6 @@ pub fn register_css() {
 
 }
 
-// TODO: Close loader in case of failure
 pub fn bytes_to_pixbuf(data: &[u8], size: Option<(i32, i32)>) -> GtResult<gdk_pixbuf::Pixbuf> {
 
     let pixbufloader = gdk_pixbuf::PixbufLoader::new();
