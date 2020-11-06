@@ -12,12 +12,14 @@ use {
         writer::{AsyncWriter, MpscWriter}
     },
     gtk::{
-        Builder, Button, Entry, TextView, TextBuffer, TextTag, TextIter,
+        Builder, Button, Entry, Label, TextView, TextBuffer, TextTag, TextIter,
         TextTagTable, ScrolledWindow, prelude::*
     },
     gdk_pixbuf::Pixbuf,
     glib::{clone, Sender}
 };
+
+mod info;
 
 #[derive(Debug)]
 pub enum MessagePart {
@@ -36,6 +38,7 @@ const DEFAULT_CHAT_COLORS: &'static [RGB] = &[
 ];
 
 pub struct ChatSection {
+    chat_info: info::ChatInfo,
     input: Entry,
     view: TextView,
     scroll: ScrolledWindow,
@@ -54,6 +57,7 @@ impl ChatSection {
         let (buffer_tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
         let inner = Rc::new(Self {
+            chat_info: info::ChatInfo::configure(builder),
             input: get_obj!(builder, "chat-input"),
             view: get_obj!(builder, "chat-view"),
             scroll: get_obj!(builder, "chat-scroll"),
@@ -75,7 +79,15 @@ impl ChatSection {
 
             match command {
                 Commands::RoomState(room_state) => {
-                    warning!("TODO {:#?}", room_state)
+                    warning!("TODO {:#?}", room_state);
+                    inner.chat_info.set_emotes_only(room_state.is_emote_only());
+                    if let Some(followers_mode) = room_state.is_followers_only() {
+                        inner.chat_info.set_followers_only(followers_mode);
+                    }
+                    if let Some(slow_mode) = room_state.is_slow_mode() {
+                        inner.chat_info.set_slow_mode(slow_mode);
+                    }
+                    inner.chat_info.set_subscribers_only(room_state.is_subs_only());
                 },
                 // Commands::ClearChat(_) => {
                 //     inner.clear_chat()
@@ -95,6 +107,9 @@ impl ChatSection {
                     let body = String::from(privmsg.data());
                     let badges = privmsg.badges();
                     let emotes = privmsg.emotes();
+
+                    // TODO: Remove this debug
+                    debug!("{:#?}", badges);
 
                     rt::run_cb_local(async move {
                         let mut emotes_data = Vec::<(usize, Vec<u8>)>::with_capacity(emotes.len());
