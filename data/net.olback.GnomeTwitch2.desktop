@@ -5,8 +5,9 @@ Comment=Watch your favorite Twitch streamers in an GTK app!
 Keywords=stream;video;twitch;live;games;
 Exec=gnome-twitch-2
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
-Icon=input-gaming
+Icon=net.olback.GnomeTwitch2
 Terminal=false
 Type=Application
 StartupNotify=true
 Categories=GTK;GNOME;AudioVideo;Player;Video;
+

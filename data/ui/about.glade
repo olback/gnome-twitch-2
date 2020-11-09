@@ -8,7 +8,7 @@
     <property name="type-hint">dialog</property>
     <property name="program-name">Gnome Twitch 2</property>
     <property name="copyright" translatable="yes">olback ©  2020</property>
-    <property name="logo-icon-name">input-gaming</property>
+    <property name="logo-icon-name">net.olback.GnomeTwitch2</property>
     <property name="license-type">custom</property>
     <child internal-child="vbox">
       <object class="GtkBox">
