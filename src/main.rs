@@ -38,6 +38,7 @@ fn main() {
     app.connect_activate(|app| {
         resources::register_css();
         let u = Ui::build(app);
+        debug!("UI created");
         match User::load() {
             Ok(user) => { USER.lock().unwrap().replace(user); },
             Err(_) => u.auth_window.show()

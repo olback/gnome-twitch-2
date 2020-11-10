@@ -15,9 +15,13 @@ pub mod gstreamer;
 #[cfg(feature = "backend-gstreamer-opengl")]
 pub mod gstreamer_opengl;
 
+#[cfg(feature = "backend-gstreamer-vaapi")]
+pub mod gstreamer_vaapi;
+
 #[cfg(not(any(
     feature = "backend-gstreamer",
-    feature = "backend-gstreamer-opengl"
+    feature = "backend-gstreamer-opengl",
+    feature = "backend-gstreamer-vaapi"
 )))]
 compile_error!("At least one backend must be enabled");
 
@@ -26,6 +30,8 @@ pub type GtPlayerEventCb = Box<dyn Fn(GtPlayerEvent)>;
 // The order here is important, the first one enabled is the default.
 // Default to GPU accelerated rendering.
 pub const BACKENDS: &'static [(&'static str, &'static str, fn(settings: &gio::Settings, cb: GtPlayerEventCb) -> GtResult<Box<dyn GtPlayerBackend>>)] = &[
+    #[cfg(feature = "backend-gstreamer-vaapi")]
+    ("GStreamer VAAPI", "gstreamer-vaapi", gstreamer_vaapi::BackendGStreamerVAAPI::boxed),
     #[cfg(feature = "backend-gstreamer-opengl")]
     ("GStreamer OpenGL", "gstreamer-opengl", gstreamer_opengl::BackendGStreamerOpenGL::boxed),
     #[cfg(feature = "backend-gstreamer")]

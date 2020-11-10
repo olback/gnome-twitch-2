@@ -120,7 +120,7 @@ impl Ui {
                 inner.views_spinner_overlay.set_visible(false);
                 match res {
                     Ok(qualities) => {
-                        // TODO:
+                        //inner.show_player();
                         inner.chat_section.connect(stream.user_name.clone());
                         inner.player_section.play(qualities[0].1.clone());
                         inner.player_section.set_title(&stream.title);
@@ -128,7 +128,8 @@ impl Ui {
                         inner.player_section.set_broadcaster_id(stream.user_id.clone());
                         inner.player_section.set_viewer_count(stream.viewer_count);
                         inner.player_section.start_update_loop(stream.user_id.clone());
-                        inner.player_section.set_qualities(qualities);
+                        inner.player_section.set_qualities(qualities.clone());
+                        //inner.player_section.play(qualities[0].1.clone());
                         inner.show_player();
                     },
                     Err(e) => show_info_bar("Error", &e.to_string(), None::<&gtk::Widget>, gtk::MessageType::Error)

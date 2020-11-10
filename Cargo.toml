@@ -10,6 +10,7 @@ homepage = "https://github.com/olback/gnome-twitch-2"
 default = [ "backend-gstreamer", "backend-gstreamer-opengl" ]
 backend-gstreamer = [ "gst" ]
 backend-gstreamer-opengl = [ "gst", "gstv" ]
+backend-gstreamer-vaapi = [ "gst", "gstv" ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
