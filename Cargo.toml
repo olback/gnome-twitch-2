@@ -7,7 +7,7 @@ description = "Watch your favorite Twitch streamers in an GTK app!"
 homepage = "https://github.com/olback/gnome-twitch-2"
 
 [features]
-default = [ "backend-gstreamer", "backend-gstreamer-opengl" ]
+default = [ "backend-gstreamer", "backend-gstreamer-opengl", "backend-gstreamer-vaapi" ]
 backend-gstreamer = [ "gst" ]
 backend-gstreamer-opengl = [ "gst", "gstv" ]
 backend-gstreamer-vaapi = [ "gst", "gstv" ]
