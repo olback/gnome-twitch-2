@@ -28,6 +28,8 @@ impl BackendGStreamerOpenGL {
 
     pub fn new(settings: &Settings, cb: GtPlayerEventCb) -> GtResult<Self> {
 
+        disable_vaapi();
+
         let gtkglsink = p!(GstElementFactory::make("gtkglsink", None));
         let widget = p!(p!(gtkglsink.get_property("widget")).get::<Widget>()).expect("Widget not created");
         let video_sink = p!(GstElementFactory::make("glsinkbin", None));
@@ -174,3 +176,26 @@ fn set_window_handle(video_overlay: &gstv::VideoOverlay, gdk_window: &gdk::Windo
     }
 
 }
+
+fn disable_vaapi() {
+    let registry = gst::Registry::get();
+    if let Some(plugin) = registry.find_plugin("vaapi") {
+        registry.remove_plugin(&plugin);
+    }
+}
+
+/*
+static void
+disable_vaapi (void)
+{
+  GstRegistry *registry;
+  GstPlugin *plugin;
+
+  registry = gst_registry_get ();
+  plugin = gst_registry_find_plugin (registry, "vaapi");
+  if (!plugin)
+    return;
+  gst_registry_remove_plugin (registry, plugin);
+}
+*/
+

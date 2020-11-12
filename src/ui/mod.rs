@@ -120,7 +120,7 @@ impl Ui {
                 inner.views_spinner_overlay.set_visible(false);
                 match res {
                     Ok(qualities) => {
-                        //inner.show_player();
+                        inner.show_player();
                         inner.chat_section.connect(stream.user_name.clone());
                         inner.player_section.play(qualities[0].1.clone());
                         inner.player_section.set_title(&stream.title);

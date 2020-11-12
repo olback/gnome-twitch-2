@@ -17,7 +17,7 @@ pub struct BackendGStreamerVAAPI {
     playbin: Rc<GstElement>,
     state: Rc<RefCell<GtPlayerState>>,
     cb: Rc<GtPlayerEventCb>,
-    widget: DrawingArea
+    widget: Rc<DrawingArea>
 }
 
 impl BackendGStreamerVAAPI {
@@ -48,7 +48,15 @@ impl BackendGStreamerVAAPI {
             .expect("VideoOverlay dynamic_cast failed")
             .downgrade();
 
-        widget.connect_realize(move |video_window| {
+        widget.connect_realize(glib::clone!(@strong video_overlay => move |widget| {
+            if let Some(vo) = video_overlay.upgrade() {
+                vo.prepare_window_handle();
+            } else {
+                crate::error!("Failed to upgrade to VideoOverlay")
+            }
+        }));
+
+        /*widget.connect_realize(move |video_window| {
             let video_overlay = match video_overlay.upgrade() {
                 Some(vo) => vo,
                 None => return
@@ -81,13 +89,13 @@ impl BackendGStreamerVAAPI {
                     gtk::MessageType::Error
                 );
             }
-        });
+        });*/
 
         let inner = Self {
             playbin: Rc::new(playbin),
             state: Rc::new(RefCell::new(GtPlayerState::Stopped)),
             cb: Rc::new(cb),
-            widget
+            widget: Rc::new(widget)
         };
 
         let bus = p!(inner.playbin.get_bus().ok_or("Could not get playbin bus"));
@@ -98,9 +106,19 @@ impl BackendGStreamerVAAPI {
             @strong inner.widget as widget
         => move |_, msg| {
 
-            /* if let Some(vo) = video_overlay.upgrade() {
-                set_window_handle(&vo, &widget.get_toplevel().unwrap().get_window().unwrap()).unwrap();
-            } */
+            // if let Some(source) = msg.get_src() {
+                //match msg.get_type() {
+                    //gst::MessageType::Element => {
+                        if gstv::is_video_overlay_prepare_window_handle_message(msg) {
+                            if let Some(vo) = video_overlay.upgrade() {
+                                set_window_handle(&vo, &widget.get_window().unwrap()).unwrap();
+                                // crate::error!("hello")
+                            }
+                        }
+                    //},
+                    //_ => {}
+                //}
+            // }
 
             super::bus_event_handler(msg, &*playbin, &*state, &*cb);
 
