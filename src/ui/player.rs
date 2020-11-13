@@ -223,6 +223,7 @@ impl PlayerSection {
         let video_widget = inner.player.get_widget();
         container.pack_start(video_widget, true, true, 0);
         video_widget.show_all();
+        video_widget.realize();
 
         play_pause_button.connect_clicked(clone!(@strong inner => move |_| {
             match inner.player.get_state() {

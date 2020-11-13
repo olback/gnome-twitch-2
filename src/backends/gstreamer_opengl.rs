@@ -46,42 +46,42 @@ impl BackendGStreamerOpenGL {
         );
 
         let video_overlay = video_sink
-                .dynamic_cast::<gstv::VideoOverlay>()
-                .expect("VideoOverlay dynamic_cast failed")
-                .downgrade();
+            .dynamic_cast::<gstv::VideoOverlay>()
+            .expect("VideoOverlay dynamic_cast failed")
+            .downgrade();
 
-            widget.connect_realize(move |video_window| {
-                let video_overlay = match video_overlay.upgrade() {
-                    Some(video_overlay) => video_overlay,
-                    None => return,
-                };
+        widget.connect_realize(move |widget| {
+            let video_overlay = match video_overlay.upgrade() {
+                Some(video_overlay) => video_overlay,
+                None => return,
+            };
 
-                let gdk_window = video_window
-                    .get_toplevel()
-                    .expect("Could not get toplevel")
-                    .get_window()
-                    .expect("Window is None");
+            let gdk_window = widget
+                .get_toplevel()
+                .expect("Could not get toplevel")
+                .get_window()
+                .expect("Window is None");
 
-                if !gdk_window.ensure_native() {
-                    warning!("Can't create native window for widget");
-                    show_info_bar(
-                        "Internal error",
-                        "Can't create native window for widget",
-                        None::<&gtk::Widget>,
-                        gtk::MessageType::Error
-                    );
-                }
+            if !gdk_window.ensure_native() {
+                warning!("Can't create native window for widget");
+                show_info_bar(
+                    "Internal error",
+                    "Can't create native window for widget",
+                    None::<&gtk::Widget>,
+                    gtk::MessageType::Error
+                );
+            }
 
-                if let Err(e) = set_window_handle(&video_overlay, &gdk_window) {
-                    warning!("{}", e);
-                    show_info_bar(
-                        "Internal error",
-                        &e.to_string(),
-                        None::<&gtk::Widget>,
-                        gtk::MessageType::Error
-                    );
-                }
-            });
+            if let Err(e) = set_window_handle(&video_overlay, &gdk_window) {
+                warning!("{}", e);
+                show_info_bar(
+                    "Internal error",
+                    &e.to_string(),
+                    None::<&gtk::Widget>,
+                    gtk::MessageType::Error
+                );
+            }
+        });
 
         let inner = Self {
             playbin: Rc::new(playbin),

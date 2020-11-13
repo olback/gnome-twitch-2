@@ -122,15 +122,14 @@ impl Ui {
                     Ok(qualities) => {
                         inner.show_player();
                         inner.chat_section.connect(stream.user_name.clone());
-                        inner.player_section.play(qualities[0].1.clone());
                         inner.player_section.set_title(&stream.title);
                         inner.player_section.set_streamer(&stream.user_name);
                         inner.player_section.set_broadcaster_id(stream.user_id.clone());
                         inner.player_section.set_viewer_count(stream.viewer_count);
                         inner.player_section.start_update_loop(stream.user_id.clone());
                         inner.player_section.set_qualities(qualities.clone());
-                        //inner.player_section.play(qualities[0].1.clone());
-                        inner.show_player();
+                        inner.player_section.play(qualities[0].1.clone());
+                        // inner.show_player();
                     },
                     Err(e) => show_info_bar("Error", &e.to_string(), None::<&gtk::Widget>, gtk::MessageType::Error)
                 }

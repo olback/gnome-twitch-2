@@ -17,7 +17,8 @@ pub struct BackendGStreamerVAAPI {
     playbin: Rc<GstElement>,
     state: Rc<RefCell<GtPlayerState>>,
     cb: Rc<GtPlayerEventCb>,
-    widget: Rc<DrawingArea>
+    widget: Rc<DrawingArea>,
+    vo: Rc<gstv::VideoOverlay>
 }
 
 impl BackendGStreamerVAAPI {
@@ -33,92 +34,32 @@ impl BackendGStreamerVAAPI {
         widget.set_hexpand_set(true);
         widget.set_vexpand(true);
         widget.set_vexpand_set(true);
-        // let gtkglsink = p!(GstElementFactory::make("gtkglsink", None));
-        // let widget = p!(p!(gtkglsink.get_property("widget")).get::<Widget>()).expect("Widget not created");
 
         settings.bind(
             "volume",
             &playbin,
             "volume",
             SettingsBindFlags::DEFAULT
-        );
+       );
 
-        let video_overlay = video_sink
+        let video_overlay = Rc::new(video_sink
             .dynamic_cast::<gstv::VideoOverlay>()
-            .expect("VideoOverlay dynamic_cast failed")
-            .downgrade();
-
-        widget.connect_realize(glib::clone!(@strong video_overlay => move |widget| {
-            if let Some(vo) = video_overlay.upgrade() {
-                vo.prepare_window_handle();
-            } else {
-                crate::error!("Failed to upgrade to VideoOverlay")
-            }
-        }));
-
-        /*widget.connect_realize(move |video_window| {
-            let video_overlay = match video_overlay.upgrade() {
-                Some(vo) => vo,
-                None => return
-            };
-
-            debug!("Realizing...");
-
-            let gdk_window = video_window
-                .get_toplevel()
-                .expect("Could not get toplevel")
-                .get_window()
-                .expect("Window is None");
-
-            if !gdk_window.ensure_native() {
-                warning!("Can't create native window for widget");
-                show_info_bar(
-                    "Internal error",
-                    "Can't create native window for widget",
-                    None::<&gtk::Widget>,
-                    gtk::MessageType::Error
-                );
-            }
-
-            if let Err(e) = set_window_handle(&video_overlay, &gdk_window) {
-                warning!("{}", e);
-                show_info_bar(
-                    "Internal error",
-                    &e.to_string(),
-                    None::<&gtk::Widget>,
-                    gtk::MessageType::Error
-                );
-            }
-        });*/
+            .expect("VideoOverlay dynamic_cast failed"));
 
         let inner = Self {
             playbin: Rc::new(playbin),
             state: Rc::new(RefCell::new(GtPlayerState::Stopped)),
             cb: Rc::new(cb),
-            widget: Rc::new(widget)
+            widget: Rc::new(widget),
+            vo: video_overlay
         };
 
         let bus = p!(inner.playbin.get_bus().ok_or("Could not get playbin bus"));
         p!(bus.add_watch_local(glib::clone!(
             @strong inner.playbin as playbin,
             @strong inner.state as state,
-            @strong inner.cb as cb,
-            @strong inner.widget as widget
+            @strong inner.cb as cb
         => move |_, msg| {
-
-            // if let Some(source) = msg.get_src() {
-                //match msg.get_type() {
-                    //gst::MessageType::Element => {
-                        if gstv::is_video_overlay_prepare_window_handle_message(msg) {
-                            if let Some(vo) = video_overlay.upgrade() {
-                                set_window_handle(&vo, &widget.get_window().unwrap()).unwrap();
-                                // crate::error!("hello")
-                            }
-                        }
-                    //},
-                    //_ => {}
-                //}
-            // }
 
             super::bus_event_handler(msg, &*playbin, &*state, &*cb);
 
@@ -135,11 +76,75 @@ impl BackendGStreamerVAAPI {
         Ok(Box::new(inner))
     }
 
+    fn set_window_handle(&self) -> GtResult<()> {
+
+        let toplevel = self.widget.get_toplevel().expect("Could not get toplevel");
+        let (x, y) = self.widget.translate_coordinates(&toplevel, 0, 0)
+            .expect("Could not get coordinates of widget");
+        let (width, height) = {
+            let alloc = self.widget.get_allocation();
+            (alloc.width, alloc.height)
+        };
+
+        debug!("(x: {}, y: {})", x, y);
+        debug!("(w: {}, h: {})", width, height);
+
+        let gdk_window = self.widget
+            .get_toplevel()
+            .expect("Could not get toplevel")
+            .get_window()
+            .expect("Window is None");
+
+        if !gdk_window.ensure_native() {
+            warning!("Can't create native window for widget");
+            show_info_bar(
+                "Internal error",
+                "Can't create native window for widget",
+                None::<&gtk::Widget>,
+                gtk::MessageType::Error
+            );
+        }
+
+        let display_type_name = gdk_window.get_display().get_type().name();
+
+        // Check if we're using X11 or ...
+        if display_type_name == "GdkX11Display" {
+
+            extern "C" {
+                pub fn gdk_x11_window_get_xid(window: *mut glib::object::GObject) -> *mut c_void;
+            }
+
+            #[allow(clippy::cast_ptr_alignment)]
+            unsafe {
+                let xid = gdk_x11_window_get_xid(gdk_window.as_ptr() as *mut _);
+                let xid_u = xid as usize;
+                debug!(
+                    "xid_le: 0x{:0x} xid_be: 0x{:0x}",
+                    xid_u.to_le(),
+                    xid_u.to_be()
+                );
+                self.vo.set_window_handle(xid_u);
+            }
+
+            self.vo.set_render_rectangle(x, y, width, height)
+                .expect("Could not set render rectangle");
+
+            Ok(())
+
+        } else {
+
+            Err(new_err!(format!("Display type {} not supported", display_type_name)))
+
+        }
+
+    }
+
 }
 
 impl GtPlayerBackend for BackendGStreamerVAAPI {
 
     fn play(&self) -> GtResult<()> {
+        self.set_window_handle()?;
         p!(self.playbin.set_state(GstState::Playing));
         self.state.replace(GtPlayerState::Loading);
         Ok(())
@@ -172,32 +177,3 @@ impl GtPlayerBackend for BackendGStreamerVAAPI {
     }
 
 }
-
-fn set_window_handle(video_overlay: &gstv::VideoOverlay, gdk_window: &gdk::Window) -> GtResult<()> {
-
-    let display_type_name = gdk_window.get_display().get_type().name();
-
-    // Check if we're using X11 or ...
-    if display_type_name == "GdkX11Display" {
-
-        extern "C" {
-            pub fn gdk_x11_window_get_xid(window: *mut glib::object::GObject) -> *mut c_void;
-        }
-
-        #[allow(clippy::cast_ptr_alignment)]
-        unsafe {
-            let xid = gdk_x11_window_get_xid(gdk_window.as_ptr() as *mut _);
-            debug!("xid:{:0x}", xid as usize);
-            video_overlay.set_window_handle(xid as usize);
-        }
-
-        Ok(())
-
-    } else {
-
-        Err(new_err!(format!("Display type {} not supported", display_type_name)))
-
-    }
-
-}
-
